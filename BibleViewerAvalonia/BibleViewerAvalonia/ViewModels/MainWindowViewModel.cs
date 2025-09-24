@@ -130,4 +130,6 @@ public partial class MainWindowViewModel : ObservableObject
             Application.Current.Resources["GlobalFontSize"] = newSize;
         }
     }
+
+    // 
 }
