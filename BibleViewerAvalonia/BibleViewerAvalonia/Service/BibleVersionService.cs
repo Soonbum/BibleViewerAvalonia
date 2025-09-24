@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BibleViewerAvalonia.Models;
+namespace BibleViewerAvalonia.Service;
 
 public partial class BibleVersionService
 {
@@ -92,5 +92,11 @@ public partial class BibleVersionService
             { "유다서", 1 },
             { "요한계시록", 22 },
         };
+    }
+
+    // 책 이름 목록만 간단히 가져오는 메서드
+    public IEnumerable<string> GetBookNames()
+    {
+        return GetBookStructure().Keys;
     }
 }

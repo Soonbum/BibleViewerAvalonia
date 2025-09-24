@@ -1,6 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Styling;
-using BibleViewerAvalonia.Models;
+using BibleViewerAvalonia.Service;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
