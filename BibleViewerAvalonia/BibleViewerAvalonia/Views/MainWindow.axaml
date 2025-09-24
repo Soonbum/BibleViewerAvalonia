@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BibleViewerAvalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="BibleViewerAvalonia.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="성경 뷰어"
+        Width="1000" Height="700"
+        MinWidth="800" MinHeight="500">
+
+  <Design.DataContext>
+      <!-- This only sets the DataContext for the previewer in an IDE,
+            to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+      <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <DockPanel Margin="5">
+      <!-- 1행: 기능 버튼 -->
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+        <!-- Light/Dark Theme -->
+        <Button Content="어둡게" Margin="5"/>
+        <!-- 글꼴 크기 조절 -->
+        <Button Content="글자 작게" Margin="5"/>
+        <Button Content="글자 크게" Margin="5"/>
+      </StackPanel>
+
+      <!-- 2행: 검색 바 -->
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
+        <ComboBox ItemsSource="{Binding SearchVersions}" SelectedItem="{Binding SelectedSearchVersion}" Margin="5"/>
+        <TextBox Width="200" Margin="5"/>
+        <Button Content="검색" Margin="5"/>
+      </StackPanel>
+
+      <!-- 3행: 역본 추가/삭제 -->
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+        <ItemsControl ItemsSource="{Binding BibleComboBoxes}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <!-- ItemsControl 내의 데이터 컨텍스트는 이제 ComboBoxViewModel입니다. -->
+              <ComboBox ItemsSource="{Binding Versions}"
+                        SelectedItem="{Binding SelectedVersion}"
+                        Margin="5"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Content="추가" Command="{Binding AddComboBoxCommand}" Margin="5"/>
+        <Button Content="삭제" Command="{Binding RemoveComboBoxCommand}" Margin="5"/>
+      </StackPanel>
+
+      <!-- 4행: 책/장 이동 버튼 -->
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
+        <Button Content="창세기" Margin="5" MinWidth="150" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="1장" Margin="5" MinWidth="70" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="1-31절" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+      </StackPanel>
+
+      <!-- 5행: 앞/뒤 이동 버튼 -->
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
+        <Button Content="이전 책 (Q)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="이전 장 (W)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="다음 장 (E)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="다음 책 (R)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+      </StackPanel>
+
+      <!-- 6행: 책갈피 -->
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+        <Button Content="책갈피 추가" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="책갈피 삭제" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+      </StackPanel>
+
+      <!-- 7행: 성경 본문 -->
+      <Grid ColumnDefinitions="*,*">
+        <Border Grid.Column="0" Background="AliceBlue" BorderThickness="1" BorderBrush="LightGray" Margin="5" HorizontalAlignment="Stretch">
+          <!-- TextBlock의 TextWrapping만 유지하고 ScrollViewer는 제거합니다. -->
+          <TextBlock Text="본문1. 이 텍스트는 긴 텍스트로, 자동으로 줄바꿈이 되는 것을 보여주기 위한 예시입니다. 여기에는 성경 본문의 내용이 들어갑니다."
+                     TextWrapping="Wrap"/>
+        </Border>
+        <Border Grid.Column="1" Background="AliceBlue" BorderThickness="1" BorderBrush="LightGray" Margin="5" HorizontalAlignment="Stretch">
+          <!-- TextBlock의 TextWrapping만 유지하고 ScrollViewer는 제거합니다. -->
+          <TextBlock Text="본문2. 이 텍스트도 긴 텍스트로, 자동으로 줄바꿈이 되는 것을 보여주기 위한 예시입니다. 텍스트가 컨테이너를 넘어갈 경우 자동으로 줄바꿈이 됩니다."
+                     TextWrapping="Wrap"/>
+        </Border>
+      </Grid>
+    </DockPanel>
+  </ScrollViewer>
+
+</Window>
