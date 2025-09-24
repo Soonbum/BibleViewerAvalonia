@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia;
+using Avalonia.Styling;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
@@ -65,5 +67,24 @@ public partial class MainWindowViewModel : ObservableObject
     private bool CanRemoveComboBox()
     {
         return BibleComboBoxes.Count > 1;
+    }
+
+    // 테마 변경
+    [ObservableProperty]
+    private string _themeButtonText = "어둡게";
+
+    [RelayCommand]
+    private void ToggleTheme()
+    {
+        if (Application.Current is null) return;
+
+        var currentTheme = Application.Current.RequestedThemeVariant;
+        Application.Current.RequestedThemeVariant =
+            currentTheme == ThemeVariant.Light ? ThemeVariant.Dark : ThemeVariant.Light;
+
+        if (currentTheme == ThemeVariant.Light)
+            ThemeButtonText = "어둡게";
+        else
+            ThemeButtonText = "밝게";
     }
 }
