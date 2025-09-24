@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BibleViewerAvalonia.ViewModels;
 
-public partial class ComboBoxViewModel : ObservableObject
+public partial class VersionComboBoxViewModel : ObservableObject
 {
     // 이 콤보박스에 표시될 역본 목록
     public ObservableCollection<string> Versions { get; }
@@ -16,7 +16,7 @@ public partial class ComboBoxViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedVersion;
 
-    public ComboBoxViewModel(List<string> versions, string defaultSelection = null)
+    public VersionComboBoxViewModel(List<string> versions, string defaultSelection = null)
     {
         Versions = new ObservableCollection<string>(versions);
 

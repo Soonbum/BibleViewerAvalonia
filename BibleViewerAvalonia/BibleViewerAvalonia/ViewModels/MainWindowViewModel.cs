@@ -1,12 +1,15 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Styling;
 using BibleViewerAvalonia.Service;
+using BibleViewerAvalonia.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BibleViewerAvalonia.ViewModels;
 
@@ -20,7 +23,8 @@ public partial class MainWindowViewModel : ObservableObject
     // 모든 콤보박스가 공유할 역본 목록
     private static List<string> SharedVersions { get; } = [];
 
-    public ObservableCollection<ComboBoxViewModel> BibleComboBoxes { get; }
+    // 역본 대조 보기를 선택하기 위한 콤보박스 컬렉션
+    public ObservableCollection<VersionComboBoxViewModel> BibleComboBoxes { get; }
 
     public MainWindowViewModel()
     {
@@ -35,7 +39,7 @@ public partial class MainWindowViewModel : ObservableObject
             SharedVersions.Add(version);
         }
 
-        BibleComboBoxes = new ObservableCollection<ComboBoxViewModel>();
+        BibleComboBoxes = new ObservableCollection<VersionComboBoxViewModel>();
         // 초기 콤보박스에 공유 역본 목록을 전달
         AddComboBox();
 
@@ -47,7 +51,7 @@ public partial class MainWindowViewModel : ObservableObject
     private void AddComboBox()
     {
         // 새 콤보박스 뷰모델 생성 시 공유 역본 목록을 전달
-        BibleComboBoxes.Add(new ComboBoxViewModel(SharedVersions));
+        BibleComboBoxes.Add(new VersionComboBoxViewModel(SharedVersions));
         AddComboBoxCommand.NotifyCanExecuteChanged();
         RemoveComboBoxCommand.NotifyCanExecuteChanged();
     }
@@ -131,5 +135,34 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    // 
+    // 책갈피 추가/삭제
+    public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; }
+
+    [RelayCommand]
+    private async Task AddBookmark(Window owner)
+    {
+        var dialog = new InputDialog
+        {
+            DataContext = new InputDialogViewModel
+            {
+                Title = "책갈피 입력",
+                Message = "책갈피 이름을 입력하세요."
+            }
+        };
+
+        // ShowDialog<string>은 창이 닫힐 때 string 타입의 결과를 반환합니다.
+        var result = await dialog.ShowDialog<string>(owner);
+
+        //if (!string.IsNullOrWhiteSpace(result))
+        //{
+        //    // 책갈피 이름을 입력한 경우
+        //    Bookmarks.Add(new BookmarkButtonViewModel(result));
+        //}
+    }
+
+    [RelayCommand]
+    private void RemoveBookmark()
+    {
+        //
+    }
 }

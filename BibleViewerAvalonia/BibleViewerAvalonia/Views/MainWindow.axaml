@@ -73,7 +73,7 @@
 
       <!-- 6행: 책갈피 -->
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-        <Button Content="책갈피 추가" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="책갈피 추가" Command="{Binding AddBookmarkCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Button Content="책갈피 삭제" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
       </StackPanel>
 
