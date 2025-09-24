@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Styling;
+using BibleViewerAvalonia.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -12,25 +13,28 @@ namespace BibleViewerAvalonia.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     // 검색 바 콤보박스를 위한 속성
-    public ObservableCollection<string> SearchVersions { get; } = new ObservableCollection<string>
-    {
-        "킹제임스흠정역",
-        "개역한글판",
-    };
+    public ObservableCollection<string> SearchVersions { get; } = [];
     [ObservableProperty]
     private string _selectedSearchVersion;
 
     // 모든 콤보박스가 공유할 역본 목록
-    private static readonly List<string> SharedVersions = new List<string>
-    {
-        "킹제임스흠정역",
-        "개역한글판",
-    };
+    private static List<string> SharedVersions { get; } = [];
 
     public ObservableCollection<ComboBoxViewModel> BibleComboBoxes { get; }
 
     public MainWindowViewModel()
     {
+        // 버전 목록 채우기
+        var versionService = new BibleVersionService();
+
+        var versions = versionService.GetAvailableVersions();
+
+        foreach (var version in versions)
+        {
+            SearchVersions.Add(version);
+            SharedVersions.Add(version);
+        }
+
         BibleComboBoxes = new ObservableCollection<ComboBoxViewModel>();
         // 초기 콤보박스에 공유 역본 목록을 전달
         AddComboBox();
