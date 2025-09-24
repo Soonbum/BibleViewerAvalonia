@@ -83,8 +83,47 @@ public partial class MainWindowViewModel : ObservableObject
             currentTheme == ThemeVariant.Light ? ThemeVariant.Dark : ThemeVariant.Light;
 
         if (currentTheme == ThemeVariant.Light)
-            ThemeButtonText = "어둡게";
-        else
             ThemeButtonText = "밝게";
+        else
+            ThemeButtonText = "어둡게";
+    }
+
+    // 글자 크기 변경
+    [RelayCommand]
+    private void IncreaseFontSize()
+    {
+        if (Application.Current is null) return;
+
+        // "GlobalFontSize" 키를 사용하여 리소스를 찾습니다.
+        if (Application.Current.Resources.TryGetValue("GlobalFontSize", out var currentSizeObj) && currentSizeObj is double currentSize)
+        {
+            double newSize = currentSize + 2;
+
+            // 최대 크기 제한
+            if (newSize > 30)
+                newSize = 30;
+
+            // 리소스 사전에 새 값을 다시 설정합니다. 이 순간 UI가 업데이트됩니다.
+            Application.Current.Resources["GlobalFontSize"] = newSize;
+        }
+    }
+
+    [RelayCommand]
+    private void DecreaseFontSize()
+    {
+        if (Application.Current is null) return;
+
+        // "GlobalFontSize" 키를 사용하여 리소스를 찾습니다.
+        if (Application.Current.Resources.TryGetValue("GlobalFontSize", out var currentSizeObj) && currentSizeObj is double currentSize)
+        {
+            double newSize = currentSize - 2;
+
+            // 최소 크기 제한
+            if (newSize < 10)
+                newSize = 10;
+
+            // 리소스 사전에 새 값을 다시 설정합니다. 이 순간 UI가 업데이트됩니다.
+            Application.Current.Resources["GlobalFontSize"] = newSize;
+        }
     }
 }
