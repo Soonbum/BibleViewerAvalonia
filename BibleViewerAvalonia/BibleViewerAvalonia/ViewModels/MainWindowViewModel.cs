@@ -135,6 +135,14 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    // 책 버튼
+    [ObservableProperty]
+    private string _currentBook = "창세기";   // 현재 선택된 책
+
+    // 장 버튼
+    [ObservableProperty]
+    private int _currentChapter = 1;          // 현재 선택된 장
+
     // 책갈피 추가/삭제
     public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; } = new();    // 책갈피 모음
 
@@ -158,7 +166,8 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (!string.IsNullOrWhiteSpace(result))
         {
-            Bookmarks.Add(new BookmarkButtonViewModel(result));
+            string bookmarkFullName = CurrentBook + " " + CurrentChapter + "장: " + result;
+            Bookmarks.Add(new BookmarkButtonViewModel(bookmarkFullName));
         }
     }
 
