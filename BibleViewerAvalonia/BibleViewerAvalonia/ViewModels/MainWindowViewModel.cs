@@ -15,6 +15,8 @@ namespace BibleViewerAvalonia.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+    private readonly BibleService _bibleService = new();
+
     // 검색 바 콤보박스를 위한 속성
     public ObservableCollection<string> SearchVersions { get; } = [];
     [ObservableProperty]
@@ -29,9 +31,7 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel()
     {
         // 버전 목록 채우기
-        var versionService = new BibleVersionService();
-
-        var versions = versionService.GetAvailableVersions();
+        var versions = _bibleService.GetAvailableVersions();
 
         foreach (var version in versions)
         {

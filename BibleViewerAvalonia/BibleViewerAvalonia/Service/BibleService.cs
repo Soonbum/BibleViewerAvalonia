@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BibleViewerAvalonia.Service;
 
-public partial class BibleVersionService
+public partial class BibleService
 {
     // 성경 버전 목록을 반환하는 메서드
     public IEnumerable<string> GetAvailableVersions()
