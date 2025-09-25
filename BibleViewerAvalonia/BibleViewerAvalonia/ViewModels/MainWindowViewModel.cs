@@ -136,7 +136,10 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     // 책갈피 추가/삭제
-    public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; }
+    public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; } = new();    // 책갈피 모음
+
+    [ObservableProperty]
+    private BookmarkButtonViewModel? _selectedBookmark = null;     // 선택한 책갈피
 
     [RelayCommand]
     private async Task AddBookmark(Window owner)
@@ -151,18 +154,24 @@ public partial class MainWindowViewModel : ObservableObject
         };
 
         // ShowDialog<string>은 창이 닫힐 때 string 타입의 결과를 반환합니다.
-        var result = await dialog.ShowDialog<string>(owner);
+        string result = await dialog.ShowDialog<string>(owner);
 
-        //if (!string.IsNullOrWhiteSpace(result))
-        //{
-        //    // 책갈피 이름을 입력한 경우
-        //    Bookmarks.Add(new BookmarkButtonViewModel(result));
-        //}
+        if (!string.IsNullOrWhiteSpace(result))
+        {
+            Bookmarks.Add(new BookmarkButtonViewModel(result));
+        }
+    }
+
+    [RelayCommand]
+    private void SelectBookmark(BookmarkButtonViewModel bookmark)
+    {
+        SelectedBookmark = bookmark;
     }
 
     [RelayCommand]
     private void RemoveBookmark()
     {
-        //
+        if (SelectedBookmark is not null)
+            Bookmarks.Remove(SelectedBookmark);
     }
 }

@@ -74,7 +74,21 @@
       <!-- 6행: 책갈피 -->
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
         <Button Content="책갈피 추가" Command="{Binding AddBookmarkCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Button Content="책갈피 삭제" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="책갈피 삭제" Command="{Binding RemoveBookmarkCommand}" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <ItemsControl ItemsSource="{Binding Bookmarks}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Button Content="{Binding BookmarkName}" 
+                      Command="{Binding $parent[ItemsControl].DataContext.SelectBookmarkCommand}"
+                      CommandParameter="{Binding}" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
       </StackPanel>
 
       <!-- 7행: 성경 본문 -->
