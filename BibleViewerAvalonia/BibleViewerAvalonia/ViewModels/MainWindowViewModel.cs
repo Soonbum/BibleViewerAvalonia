@@ -16,6 +16,7 @@ namespace BibleViewerAvalonia.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly BibleService _bibleService = new();
+    private readonly IWindowService _windowService = new WindowService();
 
     // 검색 바 콤보박스를 위한 속성
     public ObservableCollection<string> SearchVersions { get; } = [];
@@ -138,6 +139,28 @@ public partial class MainWindowViewModel : ObservableObject
     // 책 버튼
     [ObservableProperty]
     private string _currentBook = "창세기";   // 현재 선택된 책
+
+    // 책 버튼 클릭시
+    [RelayCommand]
+    private async Task ShowBookSelectionWIndow(Window owner)
+    {
+        var bookSelectionViewModel = new BookSelectionWindowViewModel();
+
+        var dialog = new BookSelectionWindow
+        {
+            DataContext = bookSelectionViewModel
+        };
+
+        // ShowDialog<T>를 사용하여 창을 열고 T 타입의 결과를 기다립니다.
+        // BookSelectionWindow의 Close(결과) 호출 시 그 결과가 여기에 반환됩니다.
+        var selectedBook = await dialog.ShowDialog<string?>(owner);
+
+        // 결과가 있고 비어있지 않다면 CurrentBook을 업데이트합니다.
+        if (!string.IsNullOrEmpty(selectedBook))
+        {
+            CurrentBook = selectedBook;
+        }
+    }
 
     // 장 버튼
     [ObservableProperty]
