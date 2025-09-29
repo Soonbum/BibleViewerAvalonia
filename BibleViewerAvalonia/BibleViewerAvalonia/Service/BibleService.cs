@@ -21,7 +21,16 @@ public partial class BibleService
             "쉬운성경", // koreasy
             "한글킹제임스", // korkkjv
             "현대어성경", // kortkv
+            "현대인의 성경", // korKLB
+            "새번역", // korNRSV
             "King James Version", // engkjv
+            "English Standard Version", // engESV
+            "Good News Translation", // engGNT
+            "Holman Christian Standard Bible", // engHCSB
+            "International Standard Version", // engISV
+            "New American Standard Bible", // engNASB
+            "New International Version", // engNIV
+            "New Living Translation", // engNLT
         ];
     }
 
