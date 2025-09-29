@@ -18,6 +18,10 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly BibleService _bibleService = new();
     private readonly IWindowService _windowService = new WindowService();
 
+    // 성경 전체 구조와 순서가 있는 책 목록을 저장할 필드
+    private readonly Dictionary<string, int> _bookStructure;
+    private readonly List<string> _bookNames;
+
     // 검색 바 콤보박스를 위한 속성
     public ObservableCollection<string> SearchVersions { get; } = [];
     [ObservableProperty]
@@ -31,6 +35,10 @@ public partial class MainWindowViewModel : ObservableObject
 
     public MainWindowViewModel()
     {
+        // 생성자에서 성경 구조와 책 목록을 미리 로드합니다.
+        _bookStructure = _bibleService.GetBookStructure();
+        _bookNames = [.. _bookStructure.Keys];
+
         // 버전 목록 채우기
         var versions = _bibleService.GetAvailableVersions();
 
@@ -186,6 +194,70 @@ public partial class MainWindowViewModel : ObservableObject
         if (!string.IsNullOrEmpty(selectedChapter))
         {
             CurrentChapter = selectedChapter;
+        }
+    }
+
+    // 이전 책 (Q) 버튼 클릭시
+    [RelayCommand]
+    private void GoToPreviousBook()
+    {
+        int currentIndex = _bookNames.IndexOf(CurrentBook);
+        // 첫 번째 책이면 마지막 책으로 이동 (순환)
+        int previousIndex = (currentIndex == 0) ? _bookNames.Count - 1 : currentIndex - 1;
+
+        CurrentBook = _bookNames[previousIndex];
+        CurrentChapter = 1 + "장"; // 책을 옮기면 1장으로 초기화
+    }
+
+    // 이전 장 (W) 버튼 클릭시
+    [RelayCommand]
+    private void GoToNextBook()
+    {
+        int currentIndex = _bookNames.IndexOf(CurrentBook);
+        // 마지막 책이면 첫 번째 책으로 이동 (순환)
+        int nextIndex = (currentIndex == _bookNames.Count - 1) ? 0 : currentIndex + 1;
+
+        CurrentBook = _bookNames[nextIndex];
+        CurrentChapter = 1 + "장"; // 책을 옮기면 1장으로 초기화
+    }
+
+    // 다음 장 (E) 버튼 클릭시
+    [RelayCommand]
+    private void GoToPreviousChapter()
+    {
+        int currentChapterNumber = int.Parse(CurrentChapter.Replace("장", ""));
+
+        if (currentChapterNumber > 1)
+        {
+            currentChapterNumber--;
+            CurrentChapter = currentChapterNumber + "장";
+        }
+        else // 1장이면 이전 책의 마지막 장으로 이동
+        {
+            int currentIndex = _bookNames.IndexOf(CurrentBook);
+            int previousIndex = (currentIndex == 0) ? _bookNames.Count - 1 : currentIndex - 1;
+
+            CurrentBook = _bookNames[previousIndex];
+            // 이전 책의 마지막 장 번호를 가져와 설정
+            CurrentChapter = _bookStructure[CurrentBook] + "장";
+        }
+    }
+
+    // 다음 책 (R) 버튼 클릭시
+    [RelayCommand]
+    private void GoToNextChapter()
+    {
+        int currentChapterNumber = int.Parse(CurrentChapter.Replace("장", ""));
+        int totalChapters = _bookStructure[CurrentBook];
+
+        if (currentChapterNumber < totalChapters)
+        {
+            currentChapterNumber++;
+            CurrentChapter = currentChapterNumber + "장";
+        }
+        else // 마지막 장이면 다음 책의 1장으로 이동
+        {
+            GoToNextBook(); // 이미 만들어 둔 다음 책 이동 로직 재사용
         }
     }
 

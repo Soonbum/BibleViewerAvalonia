@@ -17,6 +17,13 @@
       <vm:MainWindowViewModel/>
   </Design.DataContext>
 
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Q" Command="{Binding GoToPreviousBookCommand}" />
+    <KeyBinding Gesture="W" Command="{Binding GoToPreviousChapterCommand}" />
+    <KeyBinding Gesture="E" Command="{Binding GoToNextChapterCommand}" />
+    <KeyBinding Gesture="R" Command="{Binding GoToNextBookCommand}" />
+  </Window.KeyBindings>
+
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <DockPanel Margin="5">
       <!-- 1행: 기능 버튼 -->
@@ -65,10 +72,10 @@
 
       <!-- 5행: 앞/뒤 이동 버튼 -->
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
-        <Button Content="이전 책 (Q)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Button Content="이전 장 (W)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Button Content="다음 장 (E)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Button Content="다음 책 (R)" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="이전 책 (_Q)" Command="{Binding GoToPreviousBookCommand}" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="이전 장 (_W)" Command="{Binding GoToPreviousChapterCommand}" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="다음 장 (_E)" Command="{Binding GoToNextChapterCommand}" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="다음 책 (_R)" Command="{Binding GoToNextBookCommand}" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
       </StackPanel>
 
       <!-- 6행: 책갈피 -->
