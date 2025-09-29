@@ -14,8 +14,13 @@ public partial class BookmarkButtonViewModel : ObservableObject
     [ObservableProperty]
     public string _bookmarkName;
 
+    // 책갈피 버튼 선택 여부
+    [ObservableProperty]
+    private bool _isSelected;
+
     public BookmarkButtonViewModel(string text)
     {
         BookmarkName = text;
+        IsSelected = false;
     }
 }

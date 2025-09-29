@@ -85,14 +85,24 @@
         <ItemsControl ItemsSource="{Binding Bookmarks}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-              <StackPanel Orientation="Horizontal"/>
+              <WrapPanel />
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
+
+          <ItemsControl.Styles>
+            <Style Selector="ToggleButton:checked">
+              <Setter Property="BorderBrush" Value="DodgerBlue"/>
+              <Setter Property="BorderThickness" Value="2"/>
+            </Style>
+          </ItemsControl.Styles>
+
           <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Button Content="{Binding BookmarkName}" 
+            <DataTemplate x:DataType="vm:BookmarkButtonViewModel">
+              <ToggleButton Content="{Binding BookmarkName}"
+                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
                       Command="{Binding $parent[ItemsControl].DataContext.SelectBookmarkCommand}"
-                      CommandParameter="{Binding}" Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                      CommandParameter="{Binding}"
+                      Margin="5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>

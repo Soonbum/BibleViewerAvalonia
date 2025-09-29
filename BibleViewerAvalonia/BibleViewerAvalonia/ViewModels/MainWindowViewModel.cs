@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace BibleViewerAvalonia.ViewModels;
 
@@ -292,13 +293,70 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void SelectBookmark(BookmarkButtonViewModel bookmark)
     {
+        // 이전에 선택된 북마크가 있었다면 선택 해제
+        if (SelectedBookmark is not null)
+        {
+            SelectedBookmark.IsSelected = false;
+        }
+
+        // 현재 책, 장을 이동함
+        // 정규식 패턴: (책이름) (숫자)장: (나머지)
+        // 예: "창세기 1장: 텍스트"
+        var pattern = new Regex(@"^(.+)\s(\d+)장:.*$");
+        var match = pattern.Match(bookmark.BookmarkName);
+
+        // 정규식 매칭에 성공하면
+        if (match.Success)
+        {
+            // 첫 번째 그룹 (책 이름)과 두 번째 그룹 (장 번호)의 값을 가져옵니다.
+            string bookName = match.Groups[1].Value.Trim();
+            string chapterString = match.Groups[2].Value;
+
+            // 장 번호를 int로 변환
+            if (int.TryParse(chapterString, out int chapterNumber))
+            {
+                // CurrentBook과 CurrentChapter를 업데이트합니다.
+                CurrentBook = bookName;
+                CurrentChapter = chapterNumber + "장";
+            }
+        }
+
+        // 새로 선택된 북마크를 저장하고
         SelectedBookmark = bookmark;
+
+        // '선택됨' 상태로 변경
+        SelectedBookmark.IsSelected = true;
     }
 
     [RelayCommand]
     private void RemoveBookmark()
     {
         if (SelectedBookmark is not null)
+        {
             Bookmarks.Remove(SelectedBookmark);
+            SelectedBookmark = null; // 삭제 후 선택된 북마크도 null로 초기화
+        }
+    }
+
+    // CurrentBook 속성이 변경된 후 자동으로 호출되는 메서드
+    partial void OnCurrentBookChanged(string value)
+    {
+        DeselectCurrentBookmark();
+    }
+
+    // CurrentChapter 속성이 변경된 후 자동으로 호출되는 메서드
+    partial void OnCurrentChapterChanged(string value)
+    {
+        DeselectCurrentBookmark();
+    }
+
+    // 선택된 책갈피를 선택 해제하는 헬퍼 메서드
+    private void DeselectCurrentBookmark()
+    {
+        if (SelectedBookmark is not null)
+        {
+            SelectedBookmark.IsSelected = false;
+            SelectedBookmark = null;
+        }
     }
 }
