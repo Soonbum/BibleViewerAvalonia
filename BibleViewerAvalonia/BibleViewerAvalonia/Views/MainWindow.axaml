@@ -31,7 +31,7 @@
       <!-- 2행: 검색 바 -->
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
         <ComboBox ItemsSource="{Binding SearchVersions}" SelectedItem="{Binding SelectedSearchVersion}" Margin="5"/>
-        <TextBox Width="200" Margin="5"/>
+        <TextBox Width="300" Margin="5"/>
         <Button Content="검색" Margin="5"/>
       </StackPanel>
 
