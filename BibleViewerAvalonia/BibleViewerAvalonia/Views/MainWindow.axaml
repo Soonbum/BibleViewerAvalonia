@@ -92,18 +92,21 @@
       </StackPanel>
 
       <!-- 7행: 성경 본문 -->
-      <Grid ColumnDefinitions="*,*">
-        <Border Grid.Column="0" BorderThickness="1" BorderBrush="LightGray" Margin="5" HorizontalAlignment="Stretch">
-          <!-- TextBlock의 TextWrapping만 유지하고 ScrollViewer는 제거합니다. -->
-          <SelectableTextBlock Text="본문1. 이 텍스트는 긴 텍스트로, 자동으로 줄바꿈이 되는 것을 보여주기 위한 예시입니다. 여기에는 성경 본문의 내용이 들어갑니다."
-                     TextWrapping="Wrap"/>
-        </Border>
-        <Border Grid.Column="1" BorderThickness="1" BorderBrush="LightGray" Margin="5" HorizontalAlignment="Stretch">
-          <!-- TextBlock의 TextWrapping만 유지하고 ScrollViewer는 제거합니다. -->
-          <SelectableTextBlock Text="본문2. 이 텍스트도 긴 텍스트로, 자동으로 줄바꿈이 되는 것을 보여주기 위한 예시입니다. 텍스트가 컨테이너를 넘어갈 경우 자동으로 줄바꿈이 됩니다."
-                     TextWrapping="Wrap"/>
-        </Border>
-      </Grid>
+      <ItemsControl ItemsSource="{Binding BibleComboBoxes}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Rows="1"/>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border BorderThickness="1" BorderBrush="LightGray" Margin="5" HorizontalAlignment="Stretch">
+              <SelectableTextBlock Text="본문" TextWrapping="Wrap"/>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
     </DockPanel>
   </ScrollViewer>
 
