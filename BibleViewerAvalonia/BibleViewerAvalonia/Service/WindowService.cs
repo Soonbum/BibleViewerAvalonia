@@ -12,7 +12,7 @@ namespace BibleViewerAvalonia.Service;
 public class WindowService : IWindowService
 {
     // 뷰모델 타입과 그에 해당하는 뷰(창) 타입을 저장하는 딕셔너리
-    private readonly Dictionary<Type, Type> _mappings = new();
+    private readonly Dictionary<Type, Type> _mappings = [];
 
     public WindowService()
     {

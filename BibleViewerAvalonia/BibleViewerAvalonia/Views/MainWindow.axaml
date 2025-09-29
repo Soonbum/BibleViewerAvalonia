@@ -59,7 +59,7 @@
       <!-- 4행: 책/장 이동 버튼 -->
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
         <Button Content="{Binding CurrentBook}" Command="{Binding ShowBookSelectionWIndowCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5" MinWidth="150" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Button Content="{Binding CurrentChapter, StringFormat='{}{0}장'}" Margin="5" MinWidth="70" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="{Binding CurrentChapter}" Command="{Binding ShowChapterSelectionWindowCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5" MinWidth="70" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Button Content="1-31절" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
       </StackPanel>
 

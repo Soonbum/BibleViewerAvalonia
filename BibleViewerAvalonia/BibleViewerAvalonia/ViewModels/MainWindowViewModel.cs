@@ -40,7 +40,7 @@ public partial class MainWindowViewModel : ObservableObject
             SharedVersions.Add(version);
         }
 
-        BibleComboBoxes = new ObservableCollection<VersionComboBoxViewModel>();
+        BibleComboBoxes = [];
         // 초기 콤보박스에 공유 역본 목록을 전달
         AddComboBox();
 
@@ -138,11 +138,11 @@ public partial class MainWindowViewModel : ObservableObject
 
     // 책 버튼
     [ObservableProperty]
-    private string _currentBook = "창세기";   // 현재 선택된 책
+    private string _currentBook = "창세기"; // 현재 선택된 책
 
     // 장 버튼
     [ObservableProperty]
-    private int _currentChapter = 1;          // 현재 선택된 장
+    private string _currentChapter = "1장"; // 현재 선택된 장
 
     // 책 버튼 클릭시
     [RelayCommand]
@@ -163,12 +163,34 @@ public partial class MainWindowViewModel : ObservableObject
         if (!string.IsNullOrEmpty(selectedBook))
         {
             CurrentBook = selectedBook;
-            CurrentChapter = 1; // 책이 바뀌면 장을 1장으로 초기화
+            CurrentChapter = "1장"; // 책이 바뀌면 장을 1장으로 초기화
+        }
+    }
+
+    // 장 버튼 클릭시
+    [RelayCommand]
+    private async Task ShowChapterSelectionWindow(Window owner)
+    {
+        var chapterSelectionViewModel = new ChapterSelectionWindowViewModel(_bibleService, CurrentBook);
+
+        var dialog = new ChapterSelectionWindow
+        {
+            DataContext = chapterSelectionViewModel
+        };
+
+        // ShowDialog<T>를 사용하여 창을 열고 T 타입의 결과를 기다립니다.
+        // ChapterSelectionWindow의 Close(결과) 호출 시 그 결과가 여기에 반환됩니다.
+        var selectedChapter = await dialog.ShowDialog<string?>(owner);
+
+        // 결과가 있고 비어있지 않다면 CurrentChapter를 업데이트합니다.
+        if (!string.IsNullOrEmpty(selectedChapter))
+        {
+            CurrentChapter = selectedChapter;
         }
     }
 
     // 책갈피 추가/삭제
-    public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; } = new();    // 책갈피 모음
+    public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; } = [];    // 책갈피 모음
 
     [ObservableProperty]
     private BookmarkButtonViewModel? _selectedBookmark = null;     // 선택한 책갈피
@@ -190,7 +212,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (!string.IsNullOrWhiteSpace(result))
         {
-            string bookmarkFullName = CurrentBook + " " + CurrentChapter + "장: " + result;
+            string bookmarkFullName = CurrentBook + " " + CurrentChapter + ": " + result;
             Bookmarks.Add(new BookmarkButtonViewModel(bookmarkFullName));
         }
     }

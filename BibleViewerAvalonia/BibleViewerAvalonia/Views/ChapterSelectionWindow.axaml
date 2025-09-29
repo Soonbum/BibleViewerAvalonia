@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:BibleViewerAvalonia.ViewModels"
+        x:DataType="vm:ChapterSelectionWindowViewModel"
+        x:Class="BibleViewerAvalonia.Views.ChapterSelectionWindow"
+        xmlns:sys="using:System"
+        Title="장 선택"
+        Width="900" Height="600"
+        MinWidth="800" MinHeight="500">
+
+  <Window.DataContext>
+    <vm:ChapterSelectionWindowViewModel/>
+  </Window.DataContext>
+
+  <ScrollViewer>
+    <ItemsControl ItemsSource="{Binding ChapterNames}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel Margin="10" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="sys:String">
+          <Button Content="{Binding}"
+                  Command="{Binding $parent[ItemsControl].DataContext.SelectChapterCommand}"
+                  CommandParameter="{Binding}"
+                  MinWidth="100"
+                  MinHeight="50"
+                  Margin="5"
+                  Padding="10, 5"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center"/>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </ScrollViewer>
+
+</Window>
