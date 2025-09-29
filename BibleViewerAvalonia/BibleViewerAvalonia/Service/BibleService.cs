@@ -14,24 +14,35 @@ public partial class BibleService
         // 나중에 이 부분은 파일이나 데이터베이스에서 데이터를 읽어오도록 수정될 수 있습니다.
         return
         [
-            "킹제임스흠정역", // korhkjv
-            "개역한글", // korhrv
-            "개역개정", // kornkrv
-            "바른성경", // korktv
-            "쉬운성경", // koreasy
-            "한글킹제임스", // korkkjv
-            "현대어성경", // kortkv
-            "현대인의 성경", // korKLB
-            "새번역", // korNRSV
-            "King James Version", // engkjv
-            "English Standard Version", // engESV
-            "Good News Translation", // engGNT
-            "Holman Christian Standard Bible", // engHCSB
-            "International Standard Version", // engISV
-            "New American Standard Bible", // engNASB
-            "New International Version", // engNIV
-            "New Living Translation", // engNLT
+            "킹제임스흠정역", // korhkjv (LFA 버전)
+            "개역한글", // korhrv (LFA 버전)
+            "개역개정", // kornkrv (BDF 버전)
+            "바른성경", // korktv (LFA 버전)
+            "쉬운성경", // koreasy (BDF 버전)
+            "한글킹제임스", // korkkjv (BDF 버전)
+            "현대어성경", // kortkv (BDF 버전)
+            "현대인의 성경", // korKLB (BDF 버전)
+            "새번역", // korNRSV (BDF 버전)
+            "King James Version", // engkjv (LFA 버전)
+            "English Standard Version", // engESV (BDF 버전)
+            "Good News Translation", // engGNT (BDF 버전)
+            "Holman Christian Standard Bible", // engHCSB (BDF 버전)
+            "International Standard Version", // engISV (BDF 버전)
+            "New American Standard Bible", // engNASB (BDF 버전)
+            "New International Version", // engNIV (BDF 버전)
+            "New Living Translation", // engNLT (BDF 버전)
         ];
+
+        // 텍스트 파일의 특징은 다음과 같습니다.
+        /*
+            1) lfa -> zip으로 변경 후 압축을 풀면 다음과 같다.
+              - 역본명66_2.lfb --> 66권 2장이라는 뜻
+              - "66계 2:1 너는 에베소에 있는 교회의 사자에게 이렇게 써라. "오른손에 일곱 별을 붙잡고 일곱 금촛대 사이로 거니시는 분께서 이와 같이 말씀하신다." --> 라인 하나에 권 번호, 책 이름, 장:절 본문 구조로 되어 있음, 공백만 있는 라인은 무시할 것
+
+            2) bdf 파일 구조는 다음과 같다.
+              - 장별로 구분되어 있지 않음
+              - "01창 1:1 <세계의 시작> 태초에 하나님께서 하늘과 땅을 창조하셨습니다." --> lfa와 동일함, 간혹 권 번호만 있는 라인도 있음, 공백만 있는 라인은 무시할 것
+         */
     }
 
     // 성경 책별 장, 절 수를 반환하는 메서드
