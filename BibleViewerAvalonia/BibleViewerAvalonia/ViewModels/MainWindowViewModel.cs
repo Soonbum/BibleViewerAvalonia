@@ -140,6 +140,10 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _currentBook = "창세기";   // 현재 선택된 책
 
+    // 장 버튼
+    [ObservableProperty]
+    private int _currentChapter = 1;          // 현재 선택된 장
+
     // 책 버튼 클릭시
     [RelayCommand]
     private async Task ShowBookSelectionWIndow(Window owner)
@@ -159,12 +163,9 @@ public partial class MainWindowViewModel : ObservableObject
         if (!string.IsNullOrEmpty(selectedBook))
         {
             CurrentBook = selectedBook;
+            CurrentChapter = 1; // 책이 바뀌면 장을 1장으로 초기화
         }
     }
-
-    // 장 버튼
-    [ObservableProperty]
-    private int _currentChapter = 1;          // 현재 선택된 장
 
     // 책갈피 추가/삭제
     public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; } = new();    // 책갈피 모음
