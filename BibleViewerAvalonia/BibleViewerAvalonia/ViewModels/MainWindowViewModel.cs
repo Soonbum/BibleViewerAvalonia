@@ -27,6 +27,13 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly Dictionary<string, int> _bookStructure;
     private readonly List<string> _bookNames;
 
+    [ObservableProperty]
+    private string _themeButtonText = "어둡게";
+    [ObservableProperty]
+    private double _currentFontSize = 14; // double 타입으로 변경
+    [ObservableProperty]
+    private string _currentThemeVariant = "Light"; // "Light" 또는 "Dark"
+
     // 검색 바 콤보박스를 위한 속성
     public ObservableCollection<string> SearchVersions { get; } = [];
     [ObservableProperty]
@@ -69,7 +76,8 @@ public partial class MainWindowViewModel : ObservableObject
     // 프로그램 종료 시 호출될 메서드
     public void OnShutdown()
     {
-        // ...
+        SaveSettings();
+        SaveBookmarks();
     }
 
     // 환경 설정
@@ -101,6 +109,12 @@ public partial class MainWindowViewModel : ObservableObject
         // Add/Remove 버튼의 활성화 상태 갱신
         AddComboBoxCommand.NotifyCanExecuteChanged();
         RemoveComboBoxCommand.NotifyCanExecuteChanged();
+
+        CurrentThemeVariant = settings.ThemeVariant;
+        ThemeButtonText = (CurrentThemeVariant == "Light") ? "어둡게" : "밝게";
+        CurrentFontSize = settings.CurrentFontSize;
+        CurrentBook = settings.CurrentBook;
+        CurrentChapter = settings.CurrentChapter;
     }
 
     private void SaveSettings()
@@ -111,7 +125,11 @@ public partial class MainWindowViewModel : ObservableObject
             // 현재 콤보박스들의 선택된 역본 값을 가져오고, 나머지는 빈 값으로 채워 항상 4개를 유지
             SelectedVersions = [.. BibleComboBoxes.Select(vm => vm.SelectedVersion)
                                               .Concat(Enumerable.Repeat("", 4))
-                                              .Take(4)]
+                                              .Take(4)],
+            ThemeVariant = this.CurrentThemeVariant,
+            CurrentFontSize = this.CurrentFontSize,
+            CurrentBook = this.CurrentBook,
+            CurrentChapter = this.CurrentChapter
         };
         _settingsService.SaveSettings(settings);
     }
@@ -164,60 +182,41 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     // 테마 변경
-    [ObservableProperty]
-    private string _themeButtonText = "어둡게";
-
     [RelayCommand]
     private void ToggleTheme()
     {
-        if (Application.Current is null) return;
-
-        var currentTheme = Application.Current.RequestedThemeVariant;
-        Application.Current.RequestedThemeVariant =
-            currentTheme == ThemeVariant.Light ? ThemeVariant.Dark : ThemeVariant.Light;
-
-        if (currentTheme == ThemeVariant.Light)
+        if (CurrentThemeVariant == "Light")
+        {
             ThemeButtonText = "밝게";
+            CurrentThemeVariant = "Dark";
+        }
         else
+        {
             ThemeButtonText = "어둡게";
+            CurrentThemeVariant = "Light";
+        }
+
+        SaveSettings();
     }
 
     // 글자 크기 변경
     [RelayCommand]
     private void IncreaseFontSize()
     {
-        if (Application.Current is null) return;
-
-        // "GlobalFontSize" 키를 사용하여 리소스를 찾습니다.
-        if (Application.Current.Resources.TryGetValue("GlobalFontSize", out var currentSizeObj) && currentSizeObj is double currentSize)
+        if (CurrentFontSize < 30)
         {
-            double newSize = currentSize + 2;
-
-            // 최대 크기 제한
-            if (newSize > 30)
-                newSize = 30;
-
-            // 리소스 사전에 새 값을 다시 설정합니다. 이 순간 UI가 업데이트됩니다.
-            Application.Current.Resources["GlobalFontSize"] = newSize;
+            CurrentFontSize += 2;
+            SaveSettings();
         }
     }
 
     [RelayCommand]
     private void DecreaseFontSize()
     {
-        if (Application.Current is null) return;
-
-        // "GlobalFontSize" 키를 사용하여 리소스를 찾습니다.
-        if (Application.Current.Resources.TryGetValue("GlobalFontSize", out var currentSizeObj) && currentSizeObj is double currentSize)
+        if (CurrentFontSize > 10)
         {
-            double newSize = currentSize - 2;
-
-            // 최소 크기 제한
-            if (newSize < 10)
-                newSize = 10;
-
-            // 리소스 사전에 새 값을 다시 설정합니다. 이 순간 UI가 업데이트됩니다.
-            Application.Current.Resources["GlobalFontSize"] = newSize;
+            CurrentFontSize -= 2;
+            SaveSettings();
         }
     }
 
@@ -450,12 +449,14 @@ public partial class MainWindowViewModel : ObservableObject
     partial void OnCurrentBookChanged(string value)
     {
         DeselectCurrentBookmark();
+        SaveSettings();
     }
 
     // CurrentChapter 속성이 변경된 후 자동으로 호출되는 메서드
     partial void OnCurrentChapterChanged(string value)
     {
         DeselectCurrentBookmark();
+        SaveSettings();
     }
 
     // 선택된 책갈피를 선택 해제하는 헬퍼 메서드

@@ -9,7 +9,8 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="성경 뷰어"
         Width="1000" Height="700"
-        MinWidth="800" MinHeight="500">
+        MinWidth="800" MinHeight="500"
+        FontSize="{Binding CurrentFontSize}">
 
   <Design.DataContext>
       <!-- This only sets the DataContext for the previewer in an IDE,
@@ -119,7 +120,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Border BorderThickness="1" BorderBrush="LightGray" Margin="5" HorizontalAlignment="Stretch">
-              <SelectableTextBlock Text="본문" TextWrapping="Wrap"/>
+              <SelectableTextBlock Text="본문" TextWrapping="Wrap" FontSize="{Binding $parent[Window].DataContext.CurrentFontSize}"/>
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
