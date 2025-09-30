@@ -27,6 +27,9 @@ public partial class App : Application
             {
                 DataContext = new MainWindowViewModel(),
             };
+
+            // 종료 요청 이벤트를 구독합니다.
+            desktop.ShutdownRequested += OnShutdown;
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -42,6 +45,18 @@ public partial class App : Application
         foreach (var plugin in dataValidationPluginsToRemove)
         {
             BindingPlugins.DataValidators.Remove(plugin);
+        }
+    }
+
+    // 프로그램 종료 직전에 호출될 이벤트 핸들러
+    private void OnShutdown(object? sender, ShutdownRequestedEventArgs e)
+    {
+        // MainWindow와 그 ViewModel을 가져옵니다.
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow?.DataContext is MainWindowViewModel viewModel)
+        {
+            // ViewModel의 저장 메서드를 호출합니다.
+            viewModel.OnShutdown();
         }
     }
 }

@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ public partial class MainWindowViewModel : ObservableObject
 {
     private readonly BibleService _bibleService = new();
     private readonly BookmarkService _bookmarkService = new();
+    private readonly SettingsService _settingsService = new();
     private readonly IWindowService _windowService = new WindowService();
 
     // 성경 전체 구조와 순서가 있는 책 목록을 저장할 필드
@@ -51,24 +53,90 @@ public partial class MainWindowViewModel : ObservableObject
             SharedVersions.Add(version);
         }
 
-        BibleComboBoxes = [];
-        // 초기 콤보박스에 공유 역본 목록을 전달
-        AddComboBox();
-
         // 초기 선택 값 설정
         SelectedSearchVersion = SearchVersions.FirstOrDefault();
 
+        // BibleComboBoxes를 빈 상태로 초기화만 합니다.
+        BibleComboBoxes = [];
+
         // 책갈피 불러오기
         LoadBookmarks();
+
+        // 환경 설정 불러오기
+        LoadSettings();
     }
 
+    // 프로그램 종료 시 호출될 메서드
+    public void OnShutdown()
+    {
+        // ...
+    }
+
+    // 환경 설정
+    private void LoadSettings()
+    {
+        var settings = _settingsService.LoadSettings();
+
+        // 이전에 있던 콤보박스들을 모두 제거
+        foreach (var vm in BibleComboBoxes)
+        {
+            vm.PropertyChanged -= ComboBoxViewModel_PropertyChanged;
+        }
+        BibleComboBoxes.Clear();
+
+        // 저장된 개수만큼 콤보박스 뷰모델을 다시 생성
+        for (int i = 0; i < settings.VisibleComboBoxCount; i++)
+        {
+            // 공유 역본 목록을 전달하여 뷰모델 생성
+            var vm = new VersionComboBoxViewModel(SharedVersions)
+            {
+                // 저장된 역본으로 선택 값 설정
+                SelectedVersion = settings.SelectedVersions[i]
+            };
+            // 뷰모델의 속성 변경 이벤트를 구독 (역본 변경 감지용)
+            vm.PropertyChanged += ComboBoxViewModel_PropertyChanged;
+            BibleComboBoxes.Add(vm);
+        }
+
+        // Add/Remove 버튼의 활성화 상태 갱신
+        AddComboBoxCommand.NotifyCanExecuteChanged();
+        RemoveComboBoxCommand.NotifyCanExecuteChanged();
+    }
+
+    private void SaveSettings()
+    {
+        var settings = new AppSettings
+        {
+            VisibleComboBoxCount = BibleComboBoxes.Count,
+            // 현재 콤보박스들의 선택된 역본 값을 가져오고, 나머지는 빈 값으로 채워 항상 4개를 유지
+            SelectedVersions = [.. BibleComboBoxes.Select(vm => vm.SelectedVersion)
+                                              .Concat(Enumerable.Repeat("", 4))
+                                              .Take(4)]
+        };
+        _settingsService.SaveSettings(settings);
+    }
+
+    // 콤보박스 뷰모델의 속성이 변경될 때마다 호출되는 이벤트 핸들러
+    private void ComboBoxViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // 변경된 속성이 'SelectedVersion'일 경우에만 저장
+        if (e.PropertyName == nameof(VersionComboBoxViewModel.SelectedVersion))
+        {
+            SaveSettings();
+        }
+    }
+
+    // 역본 선택 콤보박스
     [RelayCommand(CanExecute = nameof(CanAddComboBox))]
     private void AddComboBox()
     {
-        // 새 콤보박스 뷰모델 생성 시 공유 역본 목록을 전달
-        BibleComboBoxes.Add(new VersionComboBoxViewModel(SharedVersions));
+        var vm = new VersionComboBoxViewModel(SharedVersions);
+        vm.PropertyChanged += ComboBoxViewModel_PropertyChanged; // 이벤트 구독
+        BibleComboBoxes.Add(vm);
+
         AddComboBoxCommand.NotifyCanExecuteChanged();
         RemoveComboBoxCommand.NotifyCanExecuteChanged();
+        SaveSettings(); // 변경 후 저장
     }
 
     private bool CanAddComboBox()
@@ -81,10 +149,13 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if (BibleComboBoxes.Any())
         {
-            BibleComboBoxes.RemoveAt(BibleComboBoxes.Count - 1);
+            var vm = BibleComboBoxes.Last();
+            vm.PropertyChanged -= ComboBoxViewModel_PropertyChanged; // 이벤트 구독 취소 (메모리 누수 방지)
+            BibleComboBoxes.Remove(vm);
         }
         AddComboBoxCommand.NotifyCanExecuteChanged();
         RemoveComboBoxCommand.NotifyCanExecuteChanged();
+        SaveSettings(); // 변경 후 저장
     }
 
     private bool CanRemoveComboBox()
@@ -303,12 +374,6 @@ public partial class MainWindowViewModel : ObservableObject
             Bookmarks.Add(new BookmarkButtonViewModel(newBookmarkModel));
             SaveBookmarks(); // 변경 후 저장
         }
-        
-        //if (!string.IsNullOrWhiteSpace(result))
-        //{
-        //    string bookmarkFullName = CurrentBook + " " + CurrentChapter + ": " + result;
-        //    Bookmarks.Add(new BookmarkButtonViewModel(bookmarkFullName));
-        //}
     }
 
     // 책갈피 선택
