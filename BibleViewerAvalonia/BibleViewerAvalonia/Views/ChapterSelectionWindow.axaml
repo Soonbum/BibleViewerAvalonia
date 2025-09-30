@@ -15,24 +15,20 @@
   </Window.DataContext>
 
   <ScrollViewer>
-    <ItemsControl ItemsSource="{Binding ChapterNames}">
+    <ItemsControl ItemsSource="{Binding ChapterButtons}">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
-          <WrapPanel Margin="10" />
+          <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center" />
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
-
       <ItemsControl.ItemTemplate>
-        <DataTemplate x:DataType="sys:String">
-          <Button Content="{Binding}"
-                  Command="{Binding $parent[ItemsControl].DataContext.SelectChapterCommand}"
-                  CommandParameter="{Binding}"
-                  MinWidth="100"
-                  MinHeight="50"
-                  Margin="5"
-                  Padding="10, 5"
-                  HorizontalContentAlignment="Center"
-                  VerticalContentAlignment="Center"/>
+        <DataTemplate x:DataType="vm:ChapterButtonViewModel">
+          <Button Content="{Binding ChapterText}"
+                    Background="{Binding BackgroundColor}"
+                    Command="{Binding $parent[ItemsControl].DataContext.SelectChapterCommand}"
+                    CommandParameter="{Binding}"
+                    Margin="5" Width="100" Height="40"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>

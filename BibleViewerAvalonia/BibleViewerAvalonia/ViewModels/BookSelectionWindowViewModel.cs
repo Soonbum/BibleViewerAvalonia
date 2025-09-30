@@ -13,36 +13,33 @@ namespace BibleViewerAvalonia.ViewModels;
 
 public partial class BookSelectionWindowViewModel : ObservableObject
 {
-    // 창을 닫아달라고 요청하는 이벤트
-    public event Action? CloseRequested;
+    // 창을 닫아달라고 요청하는 이벤트. 선택된 책 이름을 함께 전달합니다.
+    public event Action<string>? CloseRequested;
 
-    [ObservableProperty]
-    public string _selectedBookName = "";
+    // View(XAML)가 바인딩할 책 버튼 목록 속성
+    public ObservableCollection<BookButtonViewModel> BookButtons { get; }
 
-    // View에서 바인딩할 책 이름 목록
-    public ObservableCollection<string> BookNames { get; }
-
-    public BookSelectionWindowViewModel(BibleService bibleService)
+    public BookSelectionWindowViewModel()
     {
-        // BibleService로부터 책 이름 목록을 가져와 ObservableCollection에 저장합니다.
-        var books = bibleService.GetBookNames();
-        BookNames = new ObservableCollection<string>(books);
+        // 디자이너에서 오류가 나지 않도록 빈 컬렉션으로 초기화합니다.
+        BookButtons = [];
     }
 
-    // 디자인 타임 미리보기를 위한 기본 생성자
-    public BookSelectionWindowViewModel() : this(new BibleService())
+    // 생성자에서 부모로부터 책 버튼 목록을 전달받음
+    public BookSelectionWindowViewModel(ObservableCollection<BookButtonViewModel> bookButtons)
     {
+        BookButtons = bookButtons;
     }
 
-    // 각 책 버튼을 클릭했을 때 실행될 커맨드
+    // 버튼 클릭 시 실행될 커맨드
     [RelayCommand]
-    private void SelectBook(string? bookName)
+    private void SelectBook(BookButtonViewModel? book)
     {
-        if (bookName is null) return;
-
-        SelectedBookName = bookName;
-
-        // 창 닫기
-        CloseRequested?.Invoke();
+        if (book is not null)
+        {
+            // CloseRequested 이벤트를 발생시켜 View에게 창을 닫고
+            // 선택된 책 이름을 반환하라고 요청합니다.
+            CloseRequested?.Invoke(book.BookName);
+        }
     }
 }

@@ -13,36 +13,33 @@ namespace BibleViewerAvalonia.ViewModels;
 
 public partial class ChapterSelectionWindowViewModel : ObservableObject
 {
-    // 창을 닫아달라고 요청하는 이벤트
-    public event Action? CloseRequested;
+    // 창을 닫아달라고 요청하는 이벤트. 선택된 장 이름을 함께 전달합니다.
+    public event Action<int>? CloseRequested;
 
-    [ObservableProperty]
-    public string _selectedChapterName = "";
+    // View(XAML)가 바인딩할 장 버튼 목록 속성
+    public ObservableCollection<ChapterButtonViewModel> ChapterButtons { get; }
 
-    // View에서 바인딩할 장 이름 목록 (1장, 2장, 3장, ...)
-    public ObservableCollection<string> ChapterNames { get; }
-
-    public ChapterSelectionWindowViewModel(BibleService bibleService, string bookName)
+    public ChapterSelectionWindowViewModel()
     {
-        var bookStructure = bibleService.GetBookStructure();
-        if (bookStructure.TryGetValue(bookName, out int chapterCount))
-            ChapterNames = new ObservableCollection<string>(Enumerable.Range(1, chapterCount).Select(n => $"{n}장"));
-        else
-            ChapterNames = [];
+        // 디자이너에서 오류가 나지 않도록 빈 컬렉션으로 초기화합니다.
+        ChapterButtons = [];
     }
 
-    // 디자인 타임 미리보기를 위한 기본 생성자
-    public ChapterSelectionWindowViewModel() : this(new BibleService(), "창세기")
+    // 생성자에서 부모로부터 장 버튼 목록을 전달받음
+    public ChapterSelectionWindowViewModel(ObservableCollection<ChapterButtonViewModel> chapterButtons)
     {
+        ChapterButtons = chapterButtons;
     }
 
-    // 각 장 버튼을 클릭했을 때 실행될 커맨드
+    // 버튼 클릭 시 실행될 커맨드
     [RelayCommand]
-    private void SelectChapter(string chapterName)
+    private void SelectChapter(ChapterButtonViewModel? chapter)
     {
-        SelectedChapterName = chapterName;
-
-        // 창 닫기
-        CloseRequested?.Invoke();
+        if (chapter is not null)
+        {
+            // CloseRequested 이벤트를 발생시켜 View에게 창을 닫고
+            // 선택된 책 이름을 반환하라고 요청합니다.
+            CloseRequested?.Invoke(chapter.ChapterNumber);
+        }
     }
 }

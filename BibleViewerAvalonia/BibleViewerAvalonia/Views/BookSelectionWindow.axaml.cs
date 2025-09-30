@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using BibleViewerAvalonia.ViewModels;
 
@@ -16,8 +17,9 @@ public partial class BookSelectionWindow : Window
         {
             if (DataContext is BookSelectionWindowViewModel viewModel)
             {
-                // 뷰모델의 CloseRequested 이벤트가 발생하면 이 창을 닫습니다.
-                viewModel.CloseRequested += () => Close(viewModel.SelectedBookName);
+                // 뷰모델의 CloseRequested 이벤트가 발생하면,
+                // 전달받은 책 이름(bookName)을 결과로 반환하며 이 창을 닫습니다.
+                viewModel.CloseRequested += (bookName) => this.Close(bookName);
             }
         };
     }

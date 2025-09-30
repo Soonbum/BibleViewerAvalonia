@@ -30,5 +30,8 @@
     <Style Selector="Button">
       <Setter Property="FontSize" Value="{DynamicResource GlobalFontSize}"/>
     </Style>
+    <Style Selector="ToggleButton">
+      <Setter Property="FontSize" Value="{DynamicResource GlobalFontSize}"/>
+    </Style>
   </Application.Styles>
 </Application>

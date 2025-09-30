@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Styling;
 using BibleViewerAvalonia.Models;
 using BibleViewerAvalonia.Service;
@@ -46,6 +47,12 @@ public partial class MainWindowViewModel : ObservableObject
     // 역본 대조 보기를 선택하기 위한 콤보박스 컬렉션
     public ObservableCollection<VersionComboBoxViewModel> BibleComboBoxes { get; }
 
+    // 장 선택 창에 표시될 장 버튼 ViewModel 목록
+    public ObservableCollection<ChapterButtonViewModel> ChapterButtons { get; } = [];
+
+    // 책 선택 창에 표시될 책 버튼 ViewModel 목록
+    public ObservableCollection<BookButtonViewModel> BookButtons { get; } = [];
+
     // 생성자 ==================================================
     public MainWindowViewModel()
     {
@@ -70,6 +77,10 @@ public partial class MainWindowViewModel : ObservableObject
         LoadSettings(); // 환경 설정 불러오기
 
         LoadReadingStats(); // 생성자 마지막에 통계 로드 호출
+
+        // 앱 시작 시 책과 장 버튼 초기화
+        InitializeBookButtons();
+        UpdateChapterButtons(); // 현재 책에 따라 장 버튼 업데이트
     }
 
     // 프로그램 종료 시 호출될 메서드
@@ -230,11 +241,29 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _currentChapter = "1장"; // 현재 선택된 장
 
+    // --- 책 선택 커맨드 ---
+    [RelayCommand]
+    private void SelectBook(string bookName)
+    {
+        CurrentBook = bookName; // CurrentBook 변경 시 OnCurrentBookChanged가 자동으로 호출됨
+        CurrentChapter = "1장"; // 책이 바뀌면 장을 1장으로 초기화
+    }
+
+    // --- 장 선택 커맨드 ---
+    [RelayCommand]
+    private void SelectChapter(int chapterNumber)
+    {
+        CurrentChapter = chapterNumber.ToString() + "장"; // CurrentChapter 변경 시 OnCurrentChapterChanged가 자동으로 호출됨
+    }
+
     // 책 버튼 클릭시
     [RelayCommand]
     private async Task ShowBookSelectionWIndow(Window owner)
     {
-        var bookSelectionViewModel = new BookSelectionWindowViewModel();
+        //var bookSelectionViewModel = new BookSelectionWindowViewModel();
+
+        // ViewModel 생성 시 this.BookButtons를 전달합니다.
+        var bookSelectionViewModel = new BookSelectionWindowViewModel(this.BookButtons);
 
         var dialog = new BookSelectionWindow
         {
@@ -257,21 +286,19 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ShowChapterSelectionWindow(Window owner)
     {
-        var chapterSelectionViewModel = new ChapterSelectionWindowViewModel(_bibleService, CurrentBook);
-
+        var chapterSelectionViewModel = new ChapterSelectionWindowViewModel(this.ChapterButtons);
         var dialog = new ChapterSelectionWindow
         {
             DataContext = chapterSelectionViewModel
         };
 
-        // ShowDialog<T>를 사용하여 창을 열고 T 타입의 결과를 기다립니다.
-        // ChapterSelectionWindow의 Close(결과) 호출 시 그 결과가 여기에 반환됩니다.
-        var selectedChapter = await dialog.ShowDialog<string?>(owner);
+        // 반환 타입을 string?에서 int?로 수정합니다.
+        var selectedChapterNumber = await dialog.ShowDialog<int?>(owner);
 
-        // 결과가 있고 비어있지 않다면 CurrentChapter를 업데이트합니다.
-        if (!string.IsNullOrEmpty(selectedChapter))
+        // 결과가 있으면 (null이 아니면) CurrentChapter를 업데이트합니다.
+        if (selectedChapterNumber.HasValue)
         {
-            CurrentChapter = selectedChapter;
+            CurrentChapter = $"{selectedChapterNumber.Value}장";
         }
     }
 
@@ -453,6 +480,8 @@ public partial class MainWindowViewModel : ObservableObject
         DeselectCurrentBookmark();
         SaveSettings();
         UpdateReadStatusDisplay(); // 책이 바뀌면 '읽음' 상태 업데이트
+        UpdateChapterButtons(); // 현재 책이 바뀌면 장 버튼 목록 업데이트 및 색상 반영
+        UpdateBookButtonColor(value); // 현재 책의 버튼 색상 업데이트
     }
 
     // CurrentChapter 속성이 변경된 후 자동으로 호출되는 메서드
@@ -461,6 +490,8 @@ public partial class MainWindowViewModel : ObservableObject
         DeselectCurrentBookmark();
         SaveSettings();
         UpdateReadStatusDisplay(); // 장이 바뀌면 '읽음' 상태 업데이트
+        UpdateChapterButtonColor(CurrentBook, value.ToString()); // 현재 장의 버튼 색상만 업데이트
+        UpdateBookButtonColor(CurrentBook); // 현재 책의 버튼 색상도 업데이트 (장이 바뀌면 책도 바뀔 수 있으니)
     }
 
     // 선택된 책갈피를 선택 해제하는 헬퍼 메서드
@@ -497,16 +528,12 @@ public partial class MainWindowViewModel : ObservableObject
     // 현재 책/장이 바뀔 때마다 호출되어 UI(토글 버튼)의 상태를 업데이트하는 메서드
     private void UpdateReadStatusDisplay()
     {
-        // 데이터가 없으면 false로 초기화
         IsCurrentChapterRead = false;
-
-        // 현재 책에 대한 통계가 있는지 확인
         if (_readingStats.Books.TryGetValue(CurrentBook, out var bookStats))
         {
-            // 파싱 없이 CurrentChapter (문자열, 예: "1장")를 키로 사용해 장 통계를 찾습니다.
+            // "1장" 형태의 문자열 키를 그대로 사용
             if (bookStats.Chapters.TryGetValue(CurrentChapter, out var chapterStats))
             {
-                // 찾은 '읽음' 상태를 UI에 바인딩된 속성에 할당
                 IsCurrentChapterRead = chapterStats.IsRead;
             }
         }
@@ -516,22 +543,115 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleReadStatus()
     {
-        // 책 데이터가 없으면 새로 생성
         if (!_readingStats.Books.ContainsKey(CurrentBook))
         {
             _readingStats.Books[CurrentBook] = new BookStats();
         }
-
-        // 장 데이터가 없으면 새로 생성 (CurrentChapter 문자열을 키로 사용)
         if (!_readingStats.Books[CurrentBook].Chapters.ContainsKey(CurrentChapter))
         {
             _readingStats.Books[CurrentBook].Chapters[CurrentChapter] = new ChapterStats();
         }
-
-        // 현재 '읽음' 상태를 데이터 모델에 저장 (CurrentChapter 문자열을 키로 사용)
         _readingStats.Books[CurrentBook].Chapters[CurrentChapter].IsRead = IsCurrentChapterRead;
 
-        // 변경사항을 파일에 즉시 저장
+        // --- 저장 및 UI 업데이트 ---
         SaveReadingStats();
+        UpdateChapterButtonColor(CurrentBook, CurrentChapter); // 파싱 없이 CurrentChapter 전달
+        UpdateBookButtonColor(CurrentBook);
+    }
+
+    // 읽기 통계에 따른 색상 표시 ==================================================
+    // 앱 시작 시 또는 통계 로드 시 모든 책 버튼 ViewModel을 초기화하고 색상을 설정합니다.
+    private void InitializeBookButtons()
+    {
+        BookButtons.Clear();
+        foreach (var bookName in _bookNames) // _bookNames는 이미 모든 책 이름을 가지고 있습니다.
+        {
+            var bookButton = new BookButtonViewModel(bookName, SelectBookCommand); // SelectBookCommand는 아직 없습니다. 나중에 추가합니다.
+            BookButtons.Add(bookButton);
+            UpdateBookButtonColor(bookName); // 각 책의 초기 색상 설정
+        }
+    }
+
+    // 현재 CurrentBook에 해당하는 장 버튼 ViewModel 목록을 생성하고 색상을 설정합니다.
+    private void UpdateChapterButtons()
+    {
+        ChapterButtons.Clear();
+        if (_bookStructure.TryGetValue(CurrentBook, out int totalChapters))
+        {
+            for (int i = 1; i < totalChapters + 1; i++)
+            {
+                var chapterButton = new ChapterButtonViewModel(i, SelectChapterCommand); // SelectChapterCommand는 아직 없습니다. 나중에 추가합니다.
+                ChapterButtons.Add(chapterButton);
+                // 각 장 버튼의 색상 업데이트
+                UpdateChapterButtonColor(CurrentBook, i.ToString());
+            }
+        }
+    }
+
+    // 특정 책 버튼의 색상을 업데이트합니다.
+    private void UpdateBookButtonColor(string bookName)
+    {
+        var bookButton = BookButtons.FirstOrDefault(b => b.BookName == bookName);
+        if (bookButton is null) return;
+
+        if (!_readingStats.Books.TryGetValue(bookName, out var bookStats))
+        {
+            bookButton.BackgroundColor = Brushes.LightGray;
+            return;
+        }
+
+        if (!_bookStructure.TryGetValue(bookName, out int totalChapters))
+        {
+            bookButton.BackgroundColor = Brushes.LightGray;
+            return;
+        }
+
+        int readChaptersCount = 0;
+        for (int i = 1; i <= totalChapters; i++)
+        {
+            // 키를 "1장", "2장" 형태로 만들어서 조회
+            string chapterKey = $"{i}장";
+            if (bookStats.Chapters.TryGetValue(chapterKey, out var chapterStats) && chapterStats.IsRead)
+            {
+                readChaptersCount++;
+            }
+        }
+
+        if (readChaptersCount == totalChapters && totalChapters > 0)
+        {
+            bookButton.BackgroundColor = Brushes.LightGreen;
+        }
+        else if (readChaptersCount > 0)
+        {
+            bookButton.BackgroundColor = Brushes.LightBlue;
+        }
+        else
+        {
+            bookButton.BackgroundColor = Brushes.LightGray;
+        }
+    }
+
+    // 특정 장 버튼의 색상을 업데이트합니다. (CurrentChapter는 '1장' 형태이므로 int로 변환 필요)
+    private void UpdateChapterButtonColor(string bookName, string chapterString)
+    {
+        if (!int.TryParse(chapterString.Replace("장", ""), out int chapterNumber))
+        {
+            return;
+        }
+
+        var chapterButton = ChapterButtons.FirstOrDefault(c => c.ChapterNumber == chapterNumber);
+        if (chapterButton is null) return;
+
+        // 키를 chapterString("1장") 그대로 사용
+        if (_readingStats.Books.TryGetValue(bookName, out var bookStats) &&
+            bookStats.Chapters.TryGetValue(chapterString, out var chapterStats) &&
+            chapterStats.IsRead)
+        {
+            chapterButton.BackgroundColor = Brushes.LightGreen;
+        }
+        else
+        {
+            chapterButton.BackgroundColor = Brushes.LightGray;
+        }
     }
 }
