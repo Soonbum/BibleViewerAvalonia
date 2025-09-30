@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using BibleViewerAvalonia.Models;
 using BibleViewerAvalonia.Service;
 using BibleViewerAvalonia.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,14 +10,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace BibleViewerAvalonia.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly BibleService _bibleService = new();
+    private readonly BookmarkService _bookmarkService = new();
     private readonly IWindowService _windowService = new WindowService();
 
     // 성경 전체 구조와 순서가 있는 책 목록을 저장할 필드
@@ -55,6 +57,9 @@ public partial class MainWindowViewModel : ObservableObject
 
         // 초기 선택 값 설정
         SelectedSearchVersion = SearchVersions.FirstOrDefault();
+
+        // 책갈피 불러오기
+        LoadBookmarks();
     }
 
     [RelayCommand(CanExecute = nameof(CanAddComboBox))]
@@ -262,12 +267,13 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    // 책갈피 추가/삭제
+    // 책갈피 관련 기능
     public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; } = [];    // 책갈피 모음
 
     [ObservableProperty]
     private BookmarkButtonViewModel? _selectedBookmark = null;     // 선택한 책갈피
 
+    // 책갈피 추가
     [RelayCommand]
     private async Task AddBookmark(Window owner)
     {
@@ -285,11 +291,27 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (!string.IsNullOrWhiteSpace(result))
         {
-            string bookmarkFullName = CurrentBook + " " + CurrentChapter + ": " + result;
-            Bookmarks.Add(new BookmarkButtonViewModel(bookmarkFullName));
+            // Model 객체를 먼저 생성
+            var newBookmarkModel = new Bookmark
+            {
+                BookName = CurrentBook,
+                ChapterName = CurrentChapter,
+                Note = result
+            };
+
+            // Model로 ViewModel을 만들어 컬렉션에 추가
+            Bookmarks.Add(new BookmarkButtonViewModel(newBookmarkModel));
+            SaveBookmarks(); // 변경 후 저장
         }
+        
+        //if (!string.IsNullOrWhiteSpace(result))
+        //{
+        //    string bookmarkFullName = CurrentBook + " " + CurrentChapter + ": " + result;
+        //    Bookmarks.Add(new BookmarkButtonViewModel(bookmarkFullName));
+        //}
     }
 
+    // 책갈피 선택
     [RelayCommand]
     private void SelectBookmark(BookmarkButtonViewModel bookmark)
     {
@@ -328,13 +350,34 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedBookmark.IsSelected = true;
     }
 
+    // 책갈피 로드
+    private void LoadBookmarks()
+    {
+        var models = _bookmarkService.LoadBookmarks();
+        // 불러온 Model 목록으로 ViewModel을 만들어 컬렉션에 추가
+        foreach (var model in models)
+        {
+            Bookmarks.Add(new BookmarkButtonViewModel(model));
+        }
+    }
+
+    // 책갈피 저장
+    private void SaveBookmarks()
+    {
+        // 현재 ViewModel 목록에서 Model 데이터만 추출하여 서비스에 전달
+        var models = Bookmarks.Select(vm => vm.Model);
+        _bookmarkService.SaveBookmarks(models);
+    }
+
+    // 책갈피 삭제
     [RelayCommand]
     private void RemoveBookmark()
     {
         if (SelectedBookmark is not null)
         {
             Bookmarks.Remove(SelectedBookmark);
-            SelectedBookmark = null; // 삭제 후 선택된 북마크도 null로 초기화
+            SelectedBookmark = null;
+            SaveBookmarks(); // 변경 후 저장
         }
     }
 
