@@ -21,6 +21,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly BibleService _bibleService = new();
     private readonly BookmarkService _bookmarkService = new();
     private readonly SettingsService _settingsService = new();
+    private readonly ReadingStatsService _readingStatsService = new();
     private readonly IWindowService _windowService = new WindowService();
 
     // 성경 전체 구조와 순서가 있는 책 목록을 저장할 필드
@@ -45,14 +46,14 @@ public partial class MainWindowViewModel : ObservableObject
     // 역본 대조 보기를 선택하기 위한 콤보박스 컬렉션
     public ObservableCollection<VersionComboBoxViewModel> BibleComboBoxes { get; }
 
+    // 생성자 ==================================================
     public MainWindowViewModel()
     {
         // 생성자에서 성경 구조와 책 목록을 미리 로드합니다.
         _bookStructure = _bibleService.GetBookStructure();
         _bookNames = [.. _bookStructure.Keys];
 
-        // 버전 목록 채우기
-        var versions = _bibleService.GetAvailableVersions();
+        var versions = _bibleService.GetAvailableVersions(); // 버전 목록 채우기
 
         foreach (var version in versions)
         {
@@ -60,17 +61,15 @@ public partial class MainWindowViewModel : ObservableObject
             SharedVersions.Add(version);
         }
 
-        // 초기 선택 값 설정
-        SelectedSearchVersion = SearchVersions.FirstOrDefault();
+        SelectedSearchVersion = SearchVersions.FirstOrDefault(); // 초기 선택 값 설정
 
-        // BibleComboBoxes를 빈 상태로 초기화만 합니다.
-        BibleComboBoxes = [];
+        BibleComboBoxes = []; // BibleComboBoxes를 빈 상태로 초기화만 합니다.
 
-        // 책갈피 불러오기
-        LoadBookmarks();
+        LoadBookmarks(); // 책갈피 불러오기
 
-        // 환경 설정 불러오기
-        LoadSettings();
+        LoadSettings(); // 환경 설정 불러오기
+
+        LoadReadingStats(); // 생성자 마지막에 통계 로드 호출
     }
 
     // 프로그램 종료 시 호출될 메서드
@@ -78,9 +77,10 @@ public partial class MainWindowViewModel : ObservableObject
     {
         SaveSettings();
         SaveBookmarks();
+        SaveReadingStats();
     }
 
-    // 환경 설정
+    // 환경 설정 ==================================================
     private void LoadSettings()
     {
         var settings = _settingsService.LoadSettings();
@@ -134,6 +134,7 @@ public partial class MainWindowViewModel : ObservableObject
         _settingsService.SaveSettings(settings);
     }
 
+    // 역본 선택 콤보박스 ==================================================
     // 콤보박스 뷰모델의 속성이 변경될 때마다 호출되는 이벤트 핸들러
     private void ComboBoxViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -181,7 +182,7 @@ public partial class MainWindowViewModel : ObservableObject
         return BibleComboBoxes.Count > 1;
     }
 
-    // 테마 변경
+    // 테마 변경 ==================================================
     [RelayCommand]
     private void ToggleTheme()
     {
@@ -199,7 +200,7 @@ public partial class MainWindowViewModel : ObservableObject
         SaveSettings();
     }
 
-    // 글자 크기 변경
+    // 글자 크기 변경 ==================================================
     [RelayCommand]
     private void IncreaseFontSize()
     {
@@ -220,6 +221,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    // 책, 장 선택 및 이동 ==================================================
     // 책 버튼
     [ObservableProperty]
     private string _currentBook = "창세기"; // 현재 선택된 책
@@ -337,7 +339,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    // 책갈피 관련 기능
+    // 책갈피 관련 기능 ==================================================
     public ObservableCollection<BookmarkButtonViewModel> Bookmarks { get; } = [];    // 책갈피 모음
 
     [ObservableProperty]
@@ -450,6 +452,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         DeselectCurrentBookmark();
         SaveSettings();
+        UpdateReadStatusDisplay(); // 책이 바뀌면 '읽음' 상태 업데이트
     }
 
     // CurrentChapter 속성이 변경된 후 자동으로 호출되는 메서드
@@ -457,6 +460,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         DeselectCurrentBookmark();
         SaveSettings();
+        UpdateReadStatusDisplay(); // 장이 바뀌면 '읽음' 상태 업데이트
     }
 
     // 선택된 책갈피를 선택 해제하는 헬퍼 메서드
@@ -467,5 +471,67 @@ public partial class MainWindowViewModel : ObservableObject
             SelectedBookmark.IsSelected = false;
             SelectedBookmark = null;
         }
+    }
+
+    // 읽기 통계 ==================================================
+    // 불러온 전체 통계 데이터를 저장할 필드
+    private ReadingStatistics _readingStats = new();
+
+    // UI의 '읽음' 토글 버튼과 바인딩될 속성
+    [ObservableProperty]
+    private bool _isCurrentChapterRead;
+
+    // 통계 로드
+    private void LoadReadingStats()
+    {
+        _readingStats = _readingStatsService.LoadStats();
+        UpdateReadStatusDisplay(); // 로드 후 현재 장의 '읽음' 상태를 UI에 반영
+    }
+
+    // 통계 저장
+    private void SaveReadingStats()
+    {
+        _readingStatsService.SaveStats(_readingStats);
+    }
+
+    // 현재 책/장이 바뀔 때마다 호출되어 UI(토글 버튼)의 상태를 업데이트하는 메서드
+    private void UpdateReadStatusDisplay()
+    {
+        // 데이터가 없으면 false로 초기화
+        IsCurrentChapterRead = false;
+
+        // 현재 책에 대한 통계가 있는지 확인
+        if (_readingStats.Books.TryGetValue(CurrentBook, out var bookStats))
+        {
+            // 파싱 없이 CurrentChapter (문자열, 예: "1장")를 키로 사용해 장 통계를 찾습니다.
+            if (bookStats.Chapters.TryGetValue(CurrentChapter, out var chapterStats))
+            {
+                // 찾은 '읽음' 상태를 UI에 바인딩된 속성에 할당
+                IsCurrentChapterRead = chapterStats.IsRead;
+            }
+        }
+    }
+
+    // '읽음' 토글 버튼을 클릭했을 때 실행될 커맨드
+    [RelayCommand]
+    private void ToggleReadStatus()
+    {
+        // 책 데이터가 없으면 새로 생성
+        if (!_readingStats.Books.ContainsKey(CurrentBook))
+        {
+            _readingStats.Books[CurrentBook] = new BookStats();
+        }
+
+        // 장 데이터가 없으면 새로 생성 (CurrentChapter 문자열을 키로 사용)
+        if (!_readingStats.Books[CurrentBook].Chapters.ContainsKey(CurrentChapter))
+        {
+            _readingStats.Books[CurrentBook].Chapters[CurrentChapter] = new ChapterStats();
+        }
+
+        // 현재 '읽음' 상태를 데이터 모델에 저장 (CurrentChapter 문자열을 키로 사용)
+        _readingStats.Books[CurrentBook].Chapters[CurrentChapter].IsRead = IsCurrentChapterRead;
+
+        // 변경사항을 파일에 즉시 저장
+        SaveReadingStats();
     }
 }
