@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BibleViewerAvalonia.ViewModels"
+        x:DataType="vm:SettingsWindowViewModel"
+        x:Class="BibleViewerAvalonia.Views.SettingsWindow"
+        Title="설정"
+        Width="400" Height="250"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Spacing="10" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <TextBlock Text="데이터 초기화" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+    <Button Content="읽기 통계 모두 지우기"
+            Command="{Binding ClearReadStatsCommand}"
+            HorizontalContentAlignment="Center"
+            Width="200" />
+
+    <Button Content="밑줄 기록 모두 지우기"
+            HorizontalContentAlignment="Center"
+            Width="200"
+            IsEnabled="False"/>
+
+    <Button Content="메모 기록 모두 지우기"
+            HorizontalContentAlignment="Center"
+            Width="200"
+            IsEnabled="False"/>
+  </StackPanel>
+
+</Window>

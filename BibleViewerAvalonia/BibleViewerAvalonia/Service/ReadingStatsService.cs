@@ -39,4 +39,17 @@ public class ReadingStatsService
         string json = JsonSerializer.Serialize(stats, options);
         File.WriteAllText(_filePath, json);
     }
+
+    // 읽기 통계 초기화
+    public void ClearAllReadStatus(ReadingStatistics stats)
+    {
+        // 모든 책의 모든 장을 순회하며 IsRead를 false로 설정
+        foreach (var book in stats.Books.Values)
+        {
+            foreach (var chapter in book.Chapters.Values)
+            {
+                chapter.IsRead = false;
+            }
+        }
+    }
 }

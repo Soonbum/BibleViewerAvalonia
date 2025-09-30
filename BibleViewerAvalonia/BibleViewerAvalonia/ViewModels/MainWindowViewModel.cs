@@ -654,4 +654,46 @@ public partial class MainWindowViewModel : ObservableObject
             chapterButton.BackgroundColor = Brushes.LightGray;
         }
     }
+
+    // 설정 ==================================================
+    // 설정 창 열기 커맨드
+    [RelayCommand]
+    private async Task ShowSettingsWindow(Window owner)
+    {
+        var settingsViewModel = new SettingsWindowViewModel();
+
+        // 설정 창의 '지우기' 버튼이 눌리면 실행될 로직을 정의하고 이벤트에 연결
+        settingsViewModel.OnClearReadStats += () =>
+        {
+            // 서비스의 초기화 메서드 호출
+            _readingStatsService.ClearAllReadStatus(_readingStats);
+
+            // 변경된 내용을 파일에 즉시 저장
+            SaveReadingStats();
+
+            // UI(버튼 색상 등)를 즉시 갱신
+            RefreshUiAfterStatsChange();
+        };
+
+        var dialog = new SettingsWindow
+        {
+            DataContext = settingsViewModel
+        };
+
+        await dialog.ShowDialog(owner);
+    }
+
+    // 통계 변경 후 UI를 새로고침하는 헬퍼 메서드
+    private void RefreshUiAfterStatsChange()
+    {
+        // 현재 장의 읽음 상태 토글 버튼 갱신
+        UpdateReadStatusDisplay();
+
+        // 책/장 선택 창의 모든 버튼 색상 갱신
+        foreach (var bookName in _bookNames)
+        {
+            UpdateBookButtonColor(bookName);
+        }
+        UpdateChapterButtons(); // 현재 책의 장 버튼들 색상 갱신
+    }
 }

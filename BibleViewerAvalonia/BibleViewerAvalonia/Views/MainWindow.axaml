@@ -28,13 +28,19 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <DockPanel Margin="5">
       <!-- 1행: 기능 버튼 -->
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-        <!-- Light/Dark Theme -->
-        <Button Content="{Binding ThemeButtonText}" Command="{Binding ToggleThemeCommand}" Margin="5"/>
-        <!-- 글꼴 크기 조절 -->
-        <Button Content="글자 작게" Command="{Binding DecreaseFontSizeCommand}" Margin="5"/>
-        <Button Content="글자 크게" Command="{Binding IncreaseFontSizeCommand}" Margin="5"/>
-      </StackPanel>
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto">
+        <!-- 왼쪽 버튼 그룹 -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal">
+          <Button Content="{Binding ThemeButtonText}" Command="{Binding ToggleThemeCommand}" Margin="5"/>
+          <Button Content="글자 작게" Command="{Binding DecreaseFontSizeCommand}" Margin="5"/>
+          <Button Content="글자 크게" Command="{Binding IncreaseFontSizeCommand}" Margin="5"/>
+        </StackPanel>
+
+        <!-- 오른쪽 버튼 그룹 -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+          <Button Content="설정" Command="{Binding ShowSettingsWindowCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5"/>
+        </StackPanel>
+      </Grid>
 
       <!-- 2행: 검색 바 -->
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
