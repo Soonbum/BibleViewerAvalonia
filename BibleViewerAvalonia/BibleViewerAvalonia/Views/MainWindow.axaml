@@ -130,10 +130,12 @@
                 <ItemsControl ItemsSource="{Binding Verses}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                      <SelectableTextBlock Text="{Binding}"
-                                           TextWrapping="Wrap"
-                                           FontSize="{Binding $parent[Window].DataContext.CurrentFontSize}"
-                                           Margin="2"/>
+                      <Border BorderThickness="0,0,0,1" BorderBrush="LightGray" Margin="0,0,0,2">
+                        <SelectableTextBlock Text="{Binding}"
+                                             TextWrapping="Wrap"
+                                             FontSize="{Binding $parent[Window].DataContext.CurrentFontSize}"
+                                             Margin="2"/>
+                      </Border>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>

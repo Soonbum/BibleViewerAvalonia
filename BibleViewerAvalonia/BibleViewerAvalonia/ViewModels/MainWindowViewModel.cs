@@ -580,7 +580,7 @@ public partial class MainWindowViewModel : ObservableObject
         BookButtons.Clear();
         foreach (var bookName in _bookNames) // _bookNames는 이미 모든 책 이름을 가지고 있습니다.
         {
-            var bookButton = new BookButtonViewModel(bookName, SelectBookCommand); // SelectBookCommand는 아직 없습니다. 나중에 추가합니다.
+            var bookButton = new BookButtonViewModel(bookName, SelectBookCommand);
             BookButtons.Add(bookButton);
             UpdateBookButtonColor(bookName); // 각 책의 초기 색상 설정
         }
