@@ -20,7 +20,6 @@ public partial class BibleService
         { "한글킹제임스", ("korKKJV", "bdf") },
         { "현대어성경", ("korTKV", "bdf") },
         { "현대인의 성경", ("korKLB", "bdf") },
-        { "새번역", ("korNRSV", "bdf") },
         { "King James Version", ("engKJV", "lfb") },
         { "English Standard Version", ("engESV", "bdf") },
         { "Good News Translation", ("engGNT", "bdf") },
@@ -28,6 +27,7 @@ public partial class BibleService
         { "International Standard Version", ("engISV", "bdf") },
         { "New American Standard Bible", ("engNASB", "bdf") },
         { "New International Version", ("engNIV", "bdf") },
+        { "New Revised Standard Version", ("engNRSV", "bdf") },
         { "New Living Translation", ("engNLT", "bdf") },
     };
 

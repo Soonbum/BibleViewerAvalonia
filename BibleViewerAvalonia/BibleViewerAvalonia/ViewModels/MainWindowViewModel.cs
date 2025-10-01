@@ -158,6 +158,7 @@ public partial class MainWindowViewModel : ObservableObject
         // 변경된 속성이 'SelectedVersion'일 경우에만 저장
         if (e.PropertyName == nameof(VersionComboBoxViewModel.SelectedVersion))
         {
+            _ = LoadAllBibleTextsAsync(); // 본문 로드
             SaveSettings();
         }
     }
