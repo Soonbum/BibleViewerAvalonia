@@ -7,8 +7,7 @@
         x:Class="BibleViewerAvalonia.Views.BookSelectionWindow"
         xmlns:sys="using:System"
         Title="책 선택"
-        Width="900" Height="600"
-        MinWidth="800" MinHeight="500">
+        Width="900" Height="900">
 
   <Window.DataContext>
     <vm:BookSelectionWindowViewModel/>
@@ -27,7 +26,7 @@
                     Background="{Binding BackgroundColor}"
                     Command="{Binding $parent[ItemsControl].DataContext.SelectBookCommand}"
                     CommandParameter="{Binding}"
-                    Margin="5" Width="100" Height="40"
+                    Margin="5" Width="150" Height="40"
                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
         </DataTemplate>
       </ItemsControl.ItemTemplate>

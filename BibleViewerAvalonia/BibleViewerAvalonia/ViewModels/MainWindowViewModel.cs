@@ -592,12 +592,13 @@ public partial class MainWindowViewModel : ObservableObject
         ChapterButtons.Clear();
         if (_bookStructure.TryGetValue(CurrentBook, out int totalChapters))
         {
-            for (int i = 1; i < totalChapters + 1; i++)
+            for (int i = 1; i <= totalChapters; i++)
             {
-                var chapterButton = new ChapterButtonViewModel(i, SelectChapterCommand); // SelectChapterCommand는 아직 없습니다. 나중에 추가합니다.
+                var chapterButton = new ChapterButtonViewModel(i, SelectChapterCommand);
                 ChapterButtons.Add(chapterButton);
-                // 각 장 버튼의 색상 업데이트
-                UpdateChapterButtonColor(CurrentBook, i.ToString());
+
+                // i.ToString() 대신, 키 형식에 맞는 "{i}장" 형태로 전달합니다.
+                UpdateChapterButtonColor(CurrentBook, $"{i}장");
             }
         }
     }
@@ -608,15 +609,18 @@ public partial class MainWindowViewModel : ObservableObject
         var bookButton = BookButtons.FirstOrDefault(b => b.BookName == bookName);
         if (bookButton is null) return;
 
+        // 현재 테마를 가져옵니다.
+        var currentTheme = Application.Current?.RequestedThemeVariant;
+
         if (!_readingStats.Books.TryGetValue(bookName, out var bookStats))
         {
-            bookButton.BackgroundColor = Brushes.LightGray;
+            bookButton.BackgroundColor = currentTheme == ThemeVariant.Dark ? Brushes.DarkSlateGray : Brushes.LightGray;
             return;
         }
 
         if (!_bookStructure.TryGetValue(bookName, out int totalChapters))
         {
-            bookButton.BackgroundColor = Brushes.LightGray;
+            bookButton.BackgroundColor = currentTheme == ThemeVariant.Dark ? Brushes.DarkSlateGray : Brushes.LightGray;
             return;
         }
 
@@ -633,15 +637,18 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (readChaptersCount == totalChapters && totalChapters > 0)
         {
-            bookButton.BackgroundColor = Brushes.LightGreen;
+            // 모든 장 읽음: 테마에 따라 다른 녹색 계열 설정
+            bookButton.BackgroundColor = currentTheme == ThemeVariant.Dark ? Brushes.DarkGreen : Brushes.LightGreen;
         }
         else if (readChaptersCount > 0)
         {
-            bookButton.BackgroundColor = Brushes.LightBlue;
+            // 일부 장 읽음: 테마에 따라 다른 파란색 계열 설정
+            bookButton.BackgroundColor = currentTheme == ThemeVariant.Dark ? Brushes.DarkSlateBlue : Brushes.LightBlue;
         }
         else
         {
-            bookButton.BackgroundColor = Brushes.LightGray;
+            // 읽지 않음: 테마에 따라 기본 색상 설정
+            bookButton.BackgroundColor = currentTheme == ThemeVariant.Dark ? Brushes.DarkSlateGray : Brushes.LightGray;
         }
     }
 
@@ -649,23 +656,26 @@ public partial class MainWindowViewModel : ObservableObject
     private void UpdateChapterButtonColor(string bookName, string chapterString)
     {
         if (!int.TryParse(chapterString.Replace("장", ""), out int chapterNumber))
-        {
             return;
-        }
 
         var chapterButton = ChapterButtons.FirstOrDefault(c => c.ChapterNumber == chapterNumber);
         if (chapterButton is null) return;
+
+        // 현재 테마를 가져옵니다.
+        var currentTheme = Application.Current?.RequestedThemeVariant;
 
         // 키를 chapterString("1장") 그대로 사용
         if (_readingStats.Books.TryGetValue(bookName, out var bookStats) &&
             bookStats.Chapters.TryGetValue(chapterString, out var chapterStats) &&
             chapterStats.IsRead)
         {
-            chapterButton.BackgroundColor = Brushes.LightGreen;
+            // 읽음 상태일 때 테마별 색상
+            chapterButton.BackgroundColor = currentTheme == ThemeVariant.Dark ? Brushes.DarkGreen : Brushes.LightGreen;
         }
         else
         {
-            chapterButton.BackgroundColor = Brushes.LightGray;
+            // 읽지 않은 상태일 때 테마별 색상
+            chapterButton.BackgroundColor = currentTheme == ThemeVariant.Dark ? Brushes.DarkSlateGray : Brushes.LightGray;
         }
     }
 
