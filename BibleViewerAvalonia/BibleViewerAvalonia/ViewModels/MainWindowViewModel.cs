@@ -249,6 +249,10 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _currentChapter = "1장"; // 현재 선택된 장
 
+    // 절 범위 버튼
+    [ObservableProperty]
+    private string _verseRange = "1-31절"; // 절 범위 표시 텍스트
+
     // --- 책 선택 커맨드 ---
     [RelayCommand]
     private void SelectBook(string bookName)
@@ -716,6 +720,8 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
+        int verseMaxNum = 0;
+
         foreach (var comboVm in BibleComboBoxes)
         {
             if (string.IsNullOrEmpty(comboVm.SelectedVersion))
@@ -727,6 +733,8 @@ public partial class MainWindowViewModel : ObservableObject
             // BibleService로부터 string[] 배열을 가져옵니다.
             string[] versesArray = await GetChapterText(comboVm.SelectedVersion, CurrentBook, chapterNumber);
 
+            verseMaxNum = versesArray.Length;
+
             // 기존 내용을 지우고 새로 가져온 절들로 컬렉션을 채웁니다.
             comboVm.Verses.Clear();
             foreach (var verse in versesArray)
@@ -734,6 +742,9 @@ public partial class MainWindowViewModel : ObservableObject
                 comboVm.Verses.Add(verse);
             }
         }
+
+        // 절 버튼의 텍스트를 업데이트
+        VerseRange = $"1-{verseMaxNum}절";
     }
 
     // 파일 읽기 함수

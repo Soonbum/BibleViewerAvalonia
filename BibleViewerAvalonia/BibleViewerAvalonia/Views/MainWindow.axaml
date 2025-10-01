@@ -74,7 +74,7 @@
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
         <Button Content="{Binding CurrentBook}" Command="{Binding ShowBookSelectionWIndowCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5" MinWidth="150" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Button Content="{Binding CurrentChapter}" Command="{Binding ShowChapterSelectionWindowCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5" MinWidth="70" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Button Content="1-31절" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="{Binding VerseRange}" Margin="5" MinWidth="100" MinHeight="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <ToggleButton Content="읽음" IsChecked="{Binding IsCurrentChapterRead, Mode=TwoWay}" Command="{Binding ToggleReadStatusCommand}" FontStyle="Italic" MinWidth="80" MinHeight="40" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
       </StackPanel>
 
