@@ -8,30 +8,26 @@ namespace BibleViewerAvalonia.Service;
 
 public partial class BibleService
 {
-    // 성경 버전 목록을 반환하는 메서드
-    public IEnumerable<string> GetAvailableVersions()
+    // 성경 버전 정보 (역본 정식 명칭, 역본 약어 명칭, 파일 형식)
+    public readonly Dictionary<string, (string versionName, string fileType)> VersionInfo = new()
     {
-        // 나중에 이 부분은 파일이나 데이터베이스에서 데이터를 읽어오도록 수정될 수 있습니다.
-        return
-        [
-            "킹제임스흠정역", // korhkjv (LFA 버전)
-            "개역한글", // korhrv (LFA 버전)
-            "개역개정", // kornkrv (BDF 버전)
-            "바른성경", // korktv (LFA 버전)
-            "쉬운성경", // koreasy (BDF 버전)
-            "한글킹제임스", // korkkjv (BDF 버전)
-            "현대어성경", // kortkv (BDF 버전)
-            "현대인의 성경", // korKLB (BDF 버전)
-            "새번역", // korNRSV (BDF 버전)
-            "King James Version", // engkjv (LFA 버전)
-            "English Standard Version", // engESV (BDF 버전)
-            "Good News Translation", // engGNT (BDF 버전)
-            "Holman Christian Standard Bible", // engHCSB (BDF 버전)
-            "International Standard Version", // engISV (BDF 버전)
-            "New American Standard Bible", // engNASB (BDF 버전)
-            "New International Version", // engNIV (BDF 버전)
-            "New Living Translation", // engNLT (BDF 버전)
-        ];
+        { "킹제임스흠정역", ("korhkjv", "lfa") },
+        { "개역한글", ("korhrv", "lfa") },
+        { "개역개정", ("kornkrv", "bdf") },
+        { "바른성경", ("korktv", "lfa") },
+        { "쉬운성경", ("koreasy", "bdf") },
+        { "한글킹제임스", ("korkkjv", "bdf") },
+        { "현대어성경", ("kortkv", "bdf") },
+        { "현대인의 성경", ("korKLB", "bdf") },
+        { "새번역", ("korNRSV", "bdf") },
+        { "King James Version", ("engkjv", "lfa") },
+        { "English Standard Version", ("engESV", "bdf") },
+        { "Good News Translation", ("engGNT", "bdf") },
+        { "Holman Christian Standard Bible", ("engHCSB", "bdf") },
+        { "International Standard Version", ("engISV", "bdf") },
+        { "New American Standard Bible", ("engNASB", "bdf") },
+        { "New International Version", ("engNIV", "bdf") },
+        { "New Living Translation", ("engNLT", "bdf") },
 
         // 텍스트 파일의 특징은 다음과 같습니다.
         /*
@@ -43,7 +39,7 @@ public partial class BibleService
               - 장별로 구분되어 있지 않음
               - "01창 1:1 <세계의 시작> 태초에 하나님께서 하늘과 땅을 창조하셨습니다." --> lfa와 동일함, 간혹 권 번호만 있는 라인도 있음, 공백만 있는 라인은 무시할 것
          */
-    }
+    };
 
     // 성경 책별 장, 절 수를 반환하는 메서드
     public Dictionary<string, int> GetBookStructure()
@@ -118,11 +114,5 @@ public partial class BibleService
             { "유다서", 1 },
             { "요한계시록", 22 },
         };
-    }
-
-    // 책 이름 목록만 간단히 가져오는 메서드
-    public IEnumerable<string> GetBookNames()
-    {
-        return GetBookStructure().Keys;
     }
 }

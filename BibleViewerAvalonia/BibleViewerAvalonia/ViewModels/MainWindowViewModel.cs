@@ -60,7 +60,7 @@ public partial class MainWindowViewModel : ObservableObject
         _bookStructure = _bibleService.GetBookStructure();
         _bookNames = [.. _bookStructure.Keys];
 
-        var versions = _bibleService.GetAvailableVersions(); // 버전 목록 채우기
+        var versions = _bibleService.VersionInfo.Keys; // 버전 목록 채우기
 
         foreach (var version in versions)
         {
