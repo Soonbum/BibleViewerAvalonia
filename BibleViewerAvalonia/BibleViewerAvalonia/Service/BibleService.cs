@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,16 +12,16 @@ public partial class BibleService
     // 성경 버전 정보 (역본 정식 명칭, 역본 약어 명칭, 파일 형식)
     public readonly Dictionary<string, (string versionName, string fileType)> VersionInfo = new()
     {
-        { "킹제임스흠정역", ("korhkjv", "lfa") },
-        { "개역한글", ("korhrv", "lfa") },
-        { "개역개정", ("kornkrv", "bdf") },
-        { "바른성경", ("korktv", "lfa") },
-        { "쉬운성경", ("koreasy", "bdf") },
-        { "한글킹제임스", ("korkkjv", "bdf") },
-        { "현대어성경", ("kortkv", "bdf") },
+        { "킹제임스흠정역", ("korHKJV", "lfb") },
+        { "개역한글", ("korHRV", "lfb") },
+        { "개역개정", ("korNKRV", "bdf") },
+        { "바른성경", ("korKTV", "lfb") },
+        { "쉬운성경", ("korEasy", "bdf") },
+        { "한글킹제임스", ("korKKJV", "bdf") },
+        { "현대어성경", ("korTKV", "bdf") },
         { "현대인의 성경", ("korKLB", "bdf") },
         { "새번역", ("korNRSV", "bdf") },
-        { "King James Version", ("engkjv", "lfa") },
+        { "King James Version", ("engKJV", "lfb") },
         { "English Standard Version", ("engESV", "bdf") },
         { "Good News Translation", ("engGNT", "bdf") },
         { "Holman Christian Standard Bible", ("engHCSB", "bdf") },
@@ -28,17 +29,6 @@ public partial class BibleService
         { "New American Standard Bible", ("engNASB", "bdf") },
         { "New International Version", ("engNIV", "bdf") },
         { "New Living Translation", ("engNLT", "bdf") },
-
-        // 텍스트 파일의 특징은 다음과 같습니다.
-        /*
-            1) lfa -> zip으로 변경 후 압축을 풀면 다음과 같다.
-              - 역본명66_2.lfb --> 66권 2장이라는 뜻
-              - "66계 2:1 너는 에베소에 있는 교회의 사자에게 이렇게 써라. "오른손에 일곱 별을 붙잡고 일곱 금촛대 사이로 거니시는 분께서 이와 같이 말씀하신다." --> 라인 하나에 권 번호, 책 이름, 장:절 본문 구조로 되어 있음, 공백만 있는 라인은 무시할 것
-
-            2) bdf 파일 구조는 다음과 같다.
-              - 장별로 구분되어 있지 않음
-              - "01창 1:1 <세계의 시작> 태초에 하나님께서 하늘과 땅을 창조하셨습니다." --> lfa와 동일함, 간혹 권 번호만 있는 라인도 있음, 공백만 있는 라인은 무시할 것
-         */
     };
 
     // 성경 책별 장, 절 수를 반환하는 메서드
@@ -114,5 +104,28 @@ public partial class BibleService
             { "유다서", 1 },
             { "요한계시록", 22 },
         };
+    }
+
+    // 성경 책 이름과 약어 매핑
+    public string GetBookAbbreviation(string versionAbbrName, string bookName)
+    {
+        int bookIndex = GetBookStructure().Keys.ToList().IndexOf(bookName); // 0부터 시작
+
+        string[] BookAbbreviationEnglish = ["Gn", "Ex", "Lv", "Nm", "Dt", "Jos", "Jdg", "Ru", "1Sm", "2Sm", "1Kg", "2Kg", "1Ch", "2Ch", "Ezr", "Neh", "Est", "Jb", "Ps", "Pr", "Ec", "Sg", "Is", "Jr", "Lm", "Ezk", "Dn", "Hs", "Jl", "Am", "Ob", "Jnh", "Mc", "Nah", "Hab", "Zph", "Hg", "Zch", "Mal",
+                                            "Mt", "Mk", "Lk", "Jn", "Ac", "Rm", "1Co", "2Co", "Gl", "Eph", "Php", "Col", "1Th", "1Tm", "2Tm", "Ti", "Phm", "Heb", "Jms", "1Pt", "2Pt", "1Jn", "2Jn", "3Jn", "Jd", "Rv"];
+
+        string[] BookAbbreviationKorean = ["창", "출", "레", "민", "신", "수", "삿", "룻", "삼상", "삼하", "왕상", "왕하", "대상", "대하", "라", "느", "더", "욥", "시", "잠", "전", "아", "사", "렘", "애", "겔", "단", "호", "욜", "암", "옵", "욘", "미", "나", "합", "습", "학", "슥", "말",
+                                           "마", "막", "눅", "요", "행", "롬", "고전", "고후", "갈", "엡", "빌", "골", "살전", "살후", "딤전", "딤후", "딛", "몬", "히", "약", "벧전", "벧후", "요일", "요이", "요삼", "유", "계"];
+
+        // 영어
+        if (versionAbbrName.StartsWith("eng", StringComparison.CurrentCultureIgnoreCase))
+        {
+            return BookAbbreviationEnglish[bookIndex];
+        }
+        // 한글
+        else
+        {
+            return BookAbbreviationKorean[bookIndex];
+        }
     }
 }

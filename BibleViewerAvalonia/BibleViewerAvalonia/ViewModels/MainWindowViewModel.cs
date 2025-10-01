@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using BibleViewerAvalonia.Models;
 using BibleViewerAvalonia.Service;
@@ -11,7 +12,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -75,6 +79,8 @@ public partial class MainWindowViewModel : ObservableObject
         LoadBookmarks(); // 책갈피 불러오기
 
         LoadSettings(); // 환경 설정 불러오기
+
+        _ = LoadAllBibleTextsAsync(); // 본문 로드
 
         LoadReadingStats(); // 생성자 마지막에 통계 로드 호출
 
@@ -166,6 +172,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         AddComboBoxCommand.NotifyCanExecuteChanged();
         RemoveComboBoxCommand.NotifyCanExecuteChanged();
+        _ = LoadAllBibleTextsAsync(); // 본문 로드
         SaveSettings(); // 변경 후 저장
     }
 
@@ -417,8 +424,8 @@ public partial class MainWindowViewModel : ObservableObject
         // 현재 책, 장을 이동함
         // 정규식 패턴: (책이름) (숫자)장: (나머지)
         // 예: "창세기 1장: 텍스트"
-        var pattern = new Regex(@"^(.+)\s(\d+)장:.*$");
-        var match = pattern.Match(bookmark.BookmarkName);
+        Regex pattern = new(@"^(.+)\s(\d+)장:.*$");
+        Match match = pattern.Match(bookmark.BookmarkName);
 
         // 정규식 매칭에 성공하면
         if (match.Success)
@@ -482,6 +489,7 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateReadStatusDisplay(); // 책이 바뀌면 '읽음' 상태 업데이트
         UpdateChapterButtons(); // 현재 책이 바뀌면 장 버튼 목록 업데이트 및 색상 반영
         UpdateBookButtonColor(value); // 현재 책의 버튼 색상 업데이트
+        _ = LoadAllBibleTextsAsync(); // 본문 로드
     }
 
     // CurrentChapter 속성이 변경된 후 자동으로 호출되는 메서드
@@ -492,6 +500,7 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateReadStatusDisplay(); // 장이 바뀌면 '읽음' 상태 업데이트
         UpdateChapterButtonColor(CurrentBook, value.ToString()); // 현재 장의 버튼 색상만 업데이트
         UpdateBookButtonColor(CurrentBook); // 현재 책의 버튼 색상도 업데이트 (장이 바뀌면 책도 바뀔 수 있으니)
+        _ = LoadAllBibleTextsAsync(); // 본문 로드
     }
 
     // 선택된 책갈피를 선택 해제하는 헬퍼 메서드
@@ -695,5 +704,108 @@ public partial class MainWindowViewModel : ObservableObject
             UpdateBookButtonColor(bookName);
         }
         UpdateChapterButtons(); // 현재 책의 장 버튼들 색상 갱신
+    }
+
+    // 본문 처리 ==================================================
+    // 본문 로드
+    private async Task LoadAllBibleTextsAsync()
+    {
+        if (!int.TryParse(CurrentChapter.Replace("장", ""), out int chapterNumber))
+        {
+            return;
+        }
+
+        foreach (var comboVm in BibleComboBoxes)
+        {
+            if (string.IsNullOrEmpty(comboVm.SelectedVersion))
+            {
+                comboVm.Verses.Clear(); // 내용 지우기
+                continue;
+            }
+
+            // BibleService로부터 string[] 배열을 가져옵니다.
+            string[] versesArray = await GetChapterText(comboVm.SelectedVersion, CurrentBook, chapterNumber);
+
+            // 기존 내용을 지우고 새로 가져온 절들로 컬렉션을 채웁니다.
+            comboVm.Verses.Clear();
+            foreach (var verse in versesArray)
+            {
+                comboVm.Verses.Add(verse);
+            }
+        }
+    }
+
+    // 파일 읽기 함수
+    private async Task<string[]> GetChapterText(string versionName, string bookName, int chapterNumber)
+    {
+        // versionInfo.versionName --> korHKJV 등
+        // versionInfo.fileType --> lfb 또는 bdf
+
+        /*
+            텍스트 파일의 특징은 다음과 같습니다.
+              1) lfb 파일 구조는 다음과 같음
+                - lfb 파일의 패턴: "korHKJV1_1.lfb 부터 korHKJV66_22.lfb 까지"
+                - 역본명66_2.lfb --> 66권 2장이라는 뜻
+                - "66계 2:1 너는 에베소에 있는 교회의 사자에게 이렇게 써라. "오른손에 일곱 별을 붙잡고 일곱 금촛대 사이로 거니시는 분께서 이와 같이 말씀하신다." --> 라인 하나에 권 번호, 책 이름, 장:절 본문 구조로 되어 있음, 공백만 있는 라인은 무시할 것
+
+              2) bdf 파일 구조는 다음과 같음
+                - bdf 파일의 패턴: "korKKJV1.pdf 부터 korKKJV7.pdf 까지"
+                - 장별로 구분되어 있지 않음
+                - "01창 1:1 <세계의 시작> 태초에 하나님께서 하늘과 땅을 창조하셨습니다." --> lfa와 동일함, 간혹 권 번호만 있는 라인도 있음, 공백만 있는 라인은 무시할 것
+         */
+
+        if (!_bibleService.VersionInfo.TryGetValue(versionName, out var versionInfo))
+        {
+            return ["오류: 해당 역본을 찾을 수 없습니다."];
+        }
+
+        // 프로그램의 루트 경로
+        string baseDirectory = AppContext.BaseDirectory;
+
+        // 책 이름으로 책 번호(순서)를 알아냄
+        int bookNumber = _bibleService.GetBookStructure().Keys.ToList().IndexOf(bookName) + 1;
+
+        if (versionInfo.fileType == "lfb")
+        {
+            string fileName = $"{versionInfo.versionName}{bookNumber:D2}_{chapterNumber}.lfb";
+            string filePath = Path.Combine(baseDirectory, "Text", versionInfo.versionName, fileName);
+
+            if (File.Exists(filePath))
+            {
+                return await File.ReadAllLinesAsync(filePath);
+            }
+            return [$"오류: {fileName} 파일을 찾을 수 없습니다."];
+        }
+        else if (versionInfo.fileType == "bdf")
+        {
+            // 책 약어 (예: "창" 또는 "Gn")
+            string bookAbbreviation = _bibleService.GetBookAbbreviation(versionInfo.versionName, bookName);
+
+            for (int i = 1; i <= 7; i++)
+            {
+                string fileName = $"{versionInfo.versionName}{i}.bdf";
+                string filePath = Path.Combine(baseDirectory, "Text", versionInfo.versionName, fileName);
+
+                if (File.Exists(filePath))
+                {
+                    string[] allLines = await File.ReadAllLinesAsync(filePath);
+
+                    // 패턴 예시: "05신 1:"
+                    Regex pattern = new($@"^{bookNumber:D2}\w+\s+{chapterNumber}:");
+
+                    // Regex의 IsMatch 메서드를 사용해 패턴과 일치하는 줄을 찾습니다.
+                    string[] chapterLines = [.. allLines.Where(line => pattern.IsMatch(line))];
+
+                    // 필터링된 결과가 하나라도 있으면, 그것이 우리가 찾던 내용이므로 즉시 반환합니다.
+                    if (chapterLines.Length > 0)
+                    {
+                        return chapterLines;
+                    }
+                }
+            }
+            return ["오류: BDF 파일에서 내용을 찾을 수 없습니다."];
+        }
+
+        return [$"오류: 내용을 찾을 수 없습니다."];
     }
 }

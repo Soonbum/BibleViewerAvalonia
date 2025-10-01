@@ -14,20 +14,13 @@ public partial class VersionComboBoxViewModel : ObservableObject
     public ObservableCollection<string> Versions { get; }
 
     [ObservableProperty]
-    private string _selectedVersion;
+    private string _selectedVersion; // 선택한 역본명
 
-    public VersionComboBoxViewModel(List<string> versions, string defaultSelection = null)
+    public ObservableCollection<string> Verses { get; } = []; // 성경 본문 텍스트
+
+    public VersionComboBoxViewModel(List<string> sharedVersions)
     {
-        Versions = new ObservableCollection<string>(versions);
-
-        // 전달받은 값이 있으면 그 값으로, 없으면 첫 번째 값으로 설정합니다.
-        if (!string.IsNullOrEmpty(defaultSelection) && Versions.Contains(defaultSelection))
-        {
-            SelectedVersion = defaultSelection;
-        }
-        else
-        {
-            SelectedVersion = Versions.FirstOrDefault();
-        }
+        Versions = new ObservableCollection<string>(sharedVersions);
+        _selectedVersion = Versions.FirstOrDefault() ?? "";
     }
 }
