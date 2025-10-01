@@ -773,7 +773,24 @@ public partial class MainWindowViewModel : ObservableObject
 
             if (File.Exists(filePath))
             {
-                return await File.ReadAllLinesAsync(filePath);
+                string[] allLines = await File.ReadAllLinesAsync(filePath);
+
+                var chapterLines = allLines
+                    // 비어 있거나 공백만 있는 줄을 제거하는 Where 필터를 추가합니다.
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    // 내용이 있는 줄에 대해서만 접두사를 제거하는 Select를 실행합니다.
+                    .Select(line =>
+                    {
+                        // 첫 번째 공백 문자의 인덱스를 찾아 그 다음 문자부터 끝까지 잘라냅니다.
+                        int firstSpaceIndex = line.IndexOf(' ');
+                        if (firstSpaceIndex != -1)
+                        {
+                            return line.Substring(firstSpaceIndex + 1);
+                        }
+                        return line;
+                    }).ToArray();
+
+                return chapterLines;
             }
             return [$"오류: {fileName} 파일을 찾을 수 없습니다."];
         }
@@ -795,13 +812,25 @@ public partial class MainWindowViewModel : ObservableObject
                     Regex pattern = new($@"^{bookNumber:D2}\w+\s+{chapterNumber}:");
 
                     // Regex의 IsMatch 메서드를 사용해 패턴과 일치하는 줄을 찾습니다.
-                    string[] chapterLines = [.. allLines.Where(line => pattern.IsMatch(line))];
+                    allLines = [.. allLines.Where(line => pattern.IsMatch(line))];
 
-                    // 필터링된 결과가 하나라도 있으면, 그것이 우리가 찾던 내용이므로 즉시 반환합니다.
-                    if (chapterLines.Length > 0)
+                    var chapterLines = allLines
+                    // 비어 있거나 공백만 있는 줄을 제거하는 Where 필터를 추가합니다.
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    // 내용이 있는 줄에 대해서만 접두사를 제거하는 Select를 실행합니다.
+                    .Select(line =>
                     {
+                        // 첫 번째 공백 문자의 인덱스를 찾아 그 다음 문자부터 끝까지 잘라냅니다.
+                        int firstSpaceIndex = line.IndexOf(' ');
+                        if (firstSpaceIndex != -1)
+                        {
+                            return line.Substring(firstSpaceIndex + 1);
+                        }
+                        return line;
+                    }).ToArray();
+
+                    if (chapterLines.Length > 0)
                         return chapterLines;
-                    }
                 }
             }
             return ["오류: BDF 파일에서 내용을 찾을 수 없습니다."];

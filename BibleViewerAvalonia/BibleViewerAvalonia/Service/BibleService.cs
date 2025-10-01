@@ -19,7 +19,6 @@ public partial class BibleService
         { "쉬운성경", ("korEasy", "bdf") },
         { "한글킹제임스", ("korKKJV", "bdf") },
         { "현대어성경", ("korTKV", "bdf") },
-        { "현대인의 성경", ("korKLB", "bdf") },
         { "King James Version", ("engKJV", "lfb") },
         { "English Standard Version", ("engESV", "bdf") },
         { "Good News Translation", ("engGNT", "bdf") },
@@ -112,7 +111,7 @@ public partial class BibleService
         int bookIndex = GetBookStructure().Keys.ToList().IndexOf(bookName); // 0부터 시작
 
         string[] BookAbbreviationEnglish = ["Gn", "Ex", "Lv", "Nm", "Dt", "Jos", "Jdg", "Ru", "1Sm", "2Sm", "1Kg", "2Kg", "1Ch", "2Ch", "Ezr", "Neh", "Est", "Jb", "Ps", "Pr", "Ec", "Sg", "Is", "Jr", "Lm", "Ezk", "Dn", "Hs", "Jl", "Am", "Ob", "Jnh", "Mc", "Nah", "Hab", "Zph", "Hg", "Zch", "Mal",
-                                            "Mt", "Mk", "Lk", "Jn", "Ac", "Rm", "1Co", "2Co", "Gl", "Eph", "Php", "Col", "1Th", "1Tm", "2Tm", "Ti", "Phm", "Heb", "Jms", "1Pt", "2Pt", "1Jn", "2Jn", "3Jn", "Jd", "Rv"];
+                                            "Mt", "Mk", "Lk", "Jn", "Ac", "Rm", "1Co", "2Co", "Gl", "Eph", "Php", "Col", "1Th", "2Th", "1Tm", "2Tm", "Ti", "Phm", "Heb", "Jms", "1Pt", "2Pt", "1Jn", "2Jn", "3Jn", "Jd", "Rv"];
 
         string[] BookAbbreviationKorean = ["창", "출", "레", "민", "신", "수", "삿", "룻", "삼상", "삼하", "왕상", "왕하", "대상", "대하", "라", "느", "더", "욥", "시", "잠", "전", "아", "사", "렘", "애", "겔", "단", "호", "욜", "암", "옵", "욘", "미", "나", "합", "습", "학", "슥", "말",
                                            "마", "막", "눅", "요", "행", "롬", "고전", "고후", "갈", "엡", "빌", "골", "살전", "살후", "딤전", "딤후", "딛", "몬", "히", "약", "벧전", "벧후", "요일", "요이", "요삼", "유", "계"];
