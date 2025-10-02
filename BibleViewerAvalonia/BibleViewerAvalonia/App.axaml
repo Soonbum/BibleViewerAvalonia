@@ -34,23 +34,5 @@
       <Setter Property="FontSize" Value="{DynamicResource GlobalFontSize}"/>
     </Style>
 
-    <Style Selector="Button.is-read:light, Button.Full:light">
-      <Setter Property="Background" Value="LightGreen"/>
-      <Setter Property="Foreground" Value="Black"/>
-    </Style>
-    <Style Selector="Button.Partial:light">
-      <Setter Property="Background" Value="LightBlue"/>
-      <Setter Property="Foreground" Value="Black"/>
-    </Style>
-
-    <Style Selector="Button.is-read:dark, Button.Full:dark">
-      <Setter Property="Background" Value="#2E7D32"/>
-      <Setter Property="Foreground" Value="White"/>
-    </Style>
-    <Style Selector="Button.Partial:dark">
-      <Setter Property="Background" Value="#1565C0"/>
-      <Setter Property="Foreground" Value="White"/>
-    </Style>
-    
   </Application.Styles>
 </Application>

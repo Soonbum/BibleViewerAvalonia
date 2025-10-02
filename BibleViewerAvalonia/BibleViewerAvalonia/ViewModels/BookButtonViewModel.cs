@@ -16,7 +16,7 @@ public partial class BookButtonViewModel : ObservableObject
 
     // 버튼의 배경색 (모든 장 읽음 여부에 따라 변경)
     [ObservableProperty]
-    private IBrush _backgroundColor = Brushes.LightGray; // 기본값
+    private IBrush _backgroundColor = Brushes.LightGray; // 기본값 (변경해도 적용 안되고 있음)
 
     // 책 버튼을 눌렀을 때 실행될 커맨드 ( MainWindowViewModel로 전달 )
     public IRelayCommand<string> SelectBookCommand { get; }

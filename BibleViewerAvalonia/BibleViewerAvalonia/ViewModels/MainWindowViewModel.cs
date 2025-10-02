@@ -259,6 +259,8 @@ public partial class MainWindowViewModel : ObservableObject
     {
         CurrentBook = bookName; // CurrentBook 변경 시 OnCurrentBookChanged가 자동으로 호출됨
         CurrentChapter = "1장"; // 책이 바뀌면 장을 1장으로 초기화
+
+        UpdateBookButtonColor(CurrentBook); // 현재 책의 버튼 색상 업데이트
     }
 
     // --- 장 선택 커맨드 ---
@@ -266,6 +268,8 @@ public partial class MainWindowViewModel : ObservableObject
     private void SelectChapter(int chapterNumber)
     {
         CurrentChapter = chapterNumber.ToString() + "장"; // CurrentChapter 변경 시 OnCurrentChapterChanged가 자동으로 호출됨
+
+        UpdateChapterButtonColor(CurrentBook, CurrentChapter); // 현재 장의 버튼 색상만 업데이트
     }
 
     // 책 버튼 클릭시
