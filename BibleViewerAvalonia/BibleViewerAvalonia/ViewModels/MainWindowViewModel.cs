@@ -36,7 +36,7 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _themeButtonText = "어둡게";
     [ObservableProperty]
-    private double _currentFontSize = 14; // double 타입으로 변경
+    private double _currentFontSize = 14;
     [ObservableProperty]
     private string _currentThemeVariant = "Light"; // "Light" 또는 "Dark"
 
@@ -276,8 +276,6 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ShowBookSelectionWIndow(Window owner)
     {
-        //var bookSelectionViewModel = new BookSelectionWindowViewModel();
-
         // ViewModel 생성 시 this.BookButtons를 전달합니다.
         var bookSelectionViewModel = new BookSelectionWindowViewModel(this.BookButtons);
 
@@ -763,8 +761,9 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     // 파일 읽기 함수
-    private async Task<string[]> GetChapterText(string versionName, string bookName, int chapterNumber)
+    private async Task<string[]> GetChapterText(string versionName /* 예: 킹제임스흠정역 */, string bookName /* 예: 창세기 */, int chapterNumber /* 예: 1 */)
     {
+        // versionName --> 킹제임스흠정역 등
         // versionInfo.versionName --> korHKJV 등
         // versionInfo.fileType --> lfb 또는 bdf
 
@@ -811,7 +810,7 @@ public partial class MainWindowViewModel : ObservableObject
                         int firstSpaceIndex = line.IndexOf(' ');
                         if (firstSpaceIndex != -1)
                         {
-                            return line.Substring(firstSpaceIndex + 1);
+                            return line[(firstSpaceIndex + 1)..];
                         }
                         return line;
                     }).ToArray();
@@ -850,7 +849,7 @@ public partial class MainWindowViewModel : ObservableObject
                         int firstSpaceIndex = line.IndexOf(' ');
                         if (firstSpaceIndex != -1)
                         {
-                            return line.Substring(firstSpaceIndex + 1);
+                            return line[(firstSpaceIndex + 1)..];
                         }
                         return line;
                     }).ToArray();
