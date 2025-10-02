@@ -7,7 +7,8 @@
         x:Class="BibleViewerAvalonia.Views.ChapterSelectionWindow"
         xmlns:sys="using:System"
         Title="장 선택"
-        Width="1000" Height="1000">
+        SizeToContent="WidthAndHeight"
+        MaxHeight="800">
 
   <Window.DataContext>
     <vm:ChapterSelectionWindowViewModel/>
@@ -17,7 +18,7 @@
     <ItemsControl ItemsSource="{Binding ChapterButtons}">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
-          <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <WrapPanel Width="550" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>

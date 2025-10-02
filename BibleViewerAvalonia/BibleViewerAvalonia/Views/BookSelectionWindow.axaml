@@ -7,7 +7,7 @@
         x:Class="BibleViewerAvalonia.Views.BookSelectionWindow"
         xmlns:sys="using:System"
         Title="책 선택"
-        Width="900" Height="900">
+        MaxWidth="900" MaxHeight="800">
 
   <Window.DataContext>
     <vm:BookSelectionWindowViewModel/>
@@ -17,7 +17,7 @@
     <ItemsControl ItemsSource="{Binding BookButtons}">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
-          <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <WrapPanel Width="800" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>

@@ -747,7 +747,8 @@ public partial class MainWindowViewModel : ObservableObject
             // BibleService로부터 string[] 배열을 가져옵니다.
             string[] versesArray = await GetChapterText(comboVm.SelectedVersion, CurrentBook, chapterNumber);
 
-            verseMaxNum = versesArray.Length;
+            if (verseMaxNum == 0)
+                verseMaxNum = versesArray.Length;
 
             // 기존 내용을 지우고 새로 가져온 절들로 컬렉션을 채웁니다.
             comboVm.Verses.Clear();
