@@ -45,8 +45,8 @@
       <!-- 2행: 검색 바 -->
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
         <ComboBox ItemsSource="{Binding SearchVersions}" SelectedItem="{Binding SelectedSearchVersion}" Margin="5"/>
-        <TextBox Width="300" Margin="5"/>
-        <Button Content="검색" Margin="5"/>
+        <TextBox Text="{Binding SearchKeyword, Mode=TwoWay}" Width="300" Margin="5"/>
+        <Button Content="검색" Command="{Binding SearchCommand}" CommandParameter="{Binding $parent[Window]}" Margin="5"/>
       </StackPanel>
 
       <!-- 3행: 역본 추가/삭제 -->

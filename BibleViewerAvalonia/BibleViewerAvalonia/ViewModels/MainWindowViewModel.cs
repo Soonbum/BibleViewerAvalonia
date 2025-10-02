@@ -277,7 +277,7 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task ShowBookSelectionWIndow(Window owner)
     {
         // ViewModel 생성 시 this.BookButtons를 전달합니다.
-        var bookSelectionViewModel = new BookSelectionWindowViewModel(this.BookButtons);
+        BookSelectionWindowViewModel bookSelectionViewModel = new(this.BookButtons);
 
         var dialog = new BookSelectionWindow
         {
@@ -300,7 +300,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ShowChapterSelectionWindow(Window owner)
     {
-        var chapterSelectionViewModel = new ChapterSelectionWindowViewModel(this.ChapterButtons);
+        ChapterSelectionWindowViewModel chapterSelectionViewModel = new(this.ChapterButtons);
         var dialog = new ChapterSelectionWindow
         {
             DataContext = chapterSelectionViewModel
@@ -612,7 +612,7 @@ public partial class MainWindowViewModel : ObservableObject
         if (bookButton is null) return;
 
         // 현재 테마를 가져옵니다.
-        var currentTheme = Application.Current?.RequestedThemeVariant;
+        ThemeVariant? currentTheme = Application.Current?.RequestedThemeVariant;
 
         if (!_readingStats.Books.TryGetValue(bookName, out var bookStats))
         {
@@ -664,7 +664,7 @@ public partial class MainWindowViewModel : ObservableObject
         if (chapterButton is null) return;
 
         // 현재 테마를 가져옵니다.
-        var currentTheme = Application.Current?.RequestedThemeVariant;
+        ThemeVariant? currentTheme = Application.Current?.RequestedThemeVariant;
 
         // 키를 chapterString("1장") 그대로 사용
         if (_readingStats.Books.TryGetValue(bookName, out var bookStats) &&
@@ -723,7 +723,7 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateChapterButtons(); // 현재 책의 장 버튼들 색상 갱신
     }
 
-    // 본문 처리 ==================================================
+    // 본문 보여주기 ==================================================
     // 본문 로드
     private async Task LoadAllBibleTextsAsync()
     {
@@ -800,7 +800,7 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 string[] allLines = await File.ReadAllLinesAsync(filePath);
 
-                var chapterLines = allLines
+                string[] chapterLines = [.. allLines
                     // 비어 있거나 공백만 있는 줄을 제거하는 Where 필터를 추가합니다.
                     .Where(line => !string.IsNullOrWhiteSpace(line))
                     // 내용이 있는 줄에 대해서만 접두사를 제거하는 Select를 실행합니다.
@@ -813,7 +813,7 @@ public partial class MainWindowViewModel : ObservableObject
                             return line[(firstSpaceIndex + 1)..];
                         }
                         return line;
-                    }).ToArray();
+                    })];
 
                 return chapterLines;
             }
@@ -839,7 +839,7 @@ public partial class MainWindowViewModel : ObservableObject
                     // Regex의 IsMatch 메서드를 사용해 패턴과 일치하는 줄을 찾습니다.
                     allLines = [.. allLines.Where(line => pattern.IsMatch(line))];
 
-                    var chapterLines = allLines
+                    string[] chapterLines = [.. allLines
                     // 비어 있거나 공백만 있는 줄을 제거하는 Where 필터를 추가합니다.
                     .Where(line => !string.IsNullOrWhiteSpace(line))
                     // 내용이 있는 줄에 대해서만 접두사를 제거하는 Select를 실행합니다.
@@ -852,7 +852,7 @@ public partial class MainWindowViewModel : ObservableObject
                             return line[(firstSpaceIndex + 1)..];
                         }
                         return line;
-                    }).ToArray();
+                    })];
 
                     if (chapterLines.Length > 0)
                         return chapterLines;
@@ -862,5 +862,96 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         return [$"오류: 내용을 찾을 수 없습니다."];
+    }
+
+    // 검색 ==================================================
+    [ObservableProperty]
+    private string _searchKeyword = ""; // 사용자가 입력한 검색 키워드
+
+    // 검색 명령을 수행합니다.
+    [RelayCommand(CanExecute = nameof(CanSearch))]
+    private async Task Search(Window owner)
+    {
+        if (string.IsNullOrWhiteSpace(SearchKeyword) || string.IsNullOrEmpty(SelectedSearchVersion))
+        {
+            return;
+        }
+
+        // 처음에는 "검색 중..."이라고 보여줌
+        ObservableCollection<SearchResultViewModel> results =
+        [
+            new("검색 중...", "선택하신 역본 전체에서 키워드를 찾고 있습니다.")
+        ];
+
+        // 뷰모델과 창 생ㅅㅇ
+        SearchResultsWindowViewModel searchResultsViewModel = new(SearchKeyword, results);
+        SearchResultsWindow dialog = new() { DataContext = searchResultsViewModel };
+
+        // 검색 결과 창은 모달리스로 보여줍니다.
+        dialog.Show(owner);
+
+        // 백그라운드로 검색 명령 수행
+        List<SearchResultViewModel> searchResults = await PerformSearchAsync();
+
+        // 결과를 다 찾으면 열려 있는 창에 결과물을 보여줍니다.
+        results.Clear();
+        foreach (var result in searchResults)
+        {
+            results.Add(result);
+        }
+    }
+
+    private bool CanSearch()
+    {
+        // 키워드, 역본 내용이 있을 때에만 검색 가능함
+        return !string.IsNullOrWhiteSpace(SearchKeyword) && !string.IsNullOrEmpty(SelectedSearchVersion);
+    }
+
+    private async Task<List<SearchResultViewModel>> PerformSearchAsync()
+    {
+        List<SearchResultViewModel> finalResults = [];
+
+        // 텍스트 데이터에서 빼고 싶은 문자들
+        Regex filterRegex = new(@"[\[\]\(\)\{\}\<\>]");
+
+        // 모든 책(창세기~요한계시록) 검색
+        foreach (var bookName in _bookNames)
+        {
+            if (!_bookStructure.TryGetValue(bookName, out int totalChapters)) continue;
+
+            // 모든 장 검색
+            for (int chapter = 1; chapter <= totalChapters; chapter++)
+            {
+                string[] verses = await GetChapterText(SelectedSearchVersion, bookName, chapter);
+                foreach (var verse in verses)
+                {
+                    string cleanedVerse = filterRegex.Replace(verse, "");
+                    if (cleanedVerse.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // 장 번호와 텍스트 포맷 추출 (예: "1:1 처음에 ...")
+                        int firstSpace = verse.IndexOf(' ');
+                        string reference = $"{bookName} {verse[..firstSpace]}";
+                        string text = verse[(firstSpace + 1)..];
+
+                        finalResults.Add(new SearchResultViewModel(reference, text));
+                    }
+                }
+            }
+        }
+        return finalResults;
+    }
+
+    // SearchKeyword 속성이 변경될 때마다 호출됩니다.
+    partial void OnSearchKeywordChanged(string value)
+    {
+        // SearchCommand에게 CanExecute 조건을 다시 확인하라고 알립니다.
+        SearchCommand.NotifyCanExecuteChanged();
+    }
+
+    // SelectedSearchVersion 속성이 변경될 때마다 호출됩니다.
+    partial void OnSelectedSearchVersionChanged(string value)
+    {
+        // SearchCommand에게 CanExecute 조건을 다시 확인하라고 알립니다.
+        SearchCommand.NotifyCanExecuteChanged();
     }
 }

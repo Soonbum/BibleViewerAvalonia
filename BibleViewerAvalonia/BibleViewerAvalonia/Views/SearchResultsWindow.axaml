@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BibleViewerAvalonia.ViewModels"
+        x:DataType="vm:SearchResultsWindowViewModel"
+        x:Class="BibleViewerAvalonia.Views.SearchResultsWindow"
+        Title="{Binding SearchKeyword, StringFormat='검색 결과: {0}'}"
+        Width="600" Height="700"
+        WindowStartupLocation="CenterOwner">
+
+  <Design.DataContext>
+    <vm:SearchResultsWindowViewModel/>
+  </Design.DataContext>
+
+  <ScrollViewer>
+    <ItemsControl ItemsSource="{Binding SearchResults}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:SearchResultViewModel">
+          <StackPanel Margin="10,5">
+            <TextBlock Text="{Binding Reference}" FontWeight="Bold" />
+            <TextBlock Text="{Binding VerseText}" TextWrapping="Wrap" />
+          </StackPanel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </ScrollViewer>
+
+</Window>
